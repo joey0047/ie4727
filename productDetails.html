@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Daey</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <nav class="nav-left">
+                <a href="#" class="nav-link">Shop <span class="dropdown-arrow">▼</span></a>
+                <a href="#" class="nav-link">About Us</a>
+                <a href="#" class="nav-link">Contact Us</a>
+            </nav>
+            <div class="logo">
+                <a href="homepage.html"><h1>Daey</h1></a>
+            </div>
+            <div class="header-icons">
+                <img src="images/icon/search.png" alt="Search" class="icon">
+                <img src="images/icon/user.png" alt="User" class="icon">
+                <img src="images/icon/shopping-bag.png" alt="Cart" class="icon">
+            </div>
+        </div>
+    </header>
+
+    <!-- Product Details Section -->
+    <section class="product-details-section">
+        <div class="product-details-container">
+            <!-- Left Column - Thumbnails -->
+            <div class="product-thumbnails">
+                <div class="thumbnail-item active">
+                    <img src="images/tempshirt1.png" alt="Product View 1" class="thumbnail-image">
+                </div>
+                <div class="thumbnail-item">
+                    <img src="images/tempshirt1.png" alt="Product View 2" class="thumbnail-image">
+                </div>
+                <div class="thumbnail-item">
+                    <img src="images/tempshirt1.png" alt="Product View 3" class="thumbnail-image">
+                </div>
+            </div>
+
+            <!-- Middle Column - Main Image -->
+            <div class="product-main-image">
+                <img src="images/tempshirt1.png" alt="Item Name" id="mainProductImage" class="main-image">
+            </div>
+
+            <!-- Right Column - Product Info -->
+            <div class="product-info">
+                <h1 class="product-details-title">Item Name</h1>
+                
+                <div class="product-rating">
+                    <div class="stars">★★★★☆</div>
+                    <span class="review-count">X Reviews</span>
+                </div>
+
+                <div class="product-price-section">
+                    <span class="product-price-main">$XXXX</span>
+                    <span class="product-price-original">$XXXXX</span>
+                </div>
+
+                <div class="product-options">
+                    <div class="option-group">
+                        <label class="option-label">Color:</label>
+                        <div class="color-swatches">
+                            <button class="color-swatch active" data-color="blue" style="background-color: #1a237e;"></button>
+                            <button class="color-swatch" data-color="green" style="background-color: #2e7d32;"></button>
+                            <button class="color-swatch" data-color="brown" style="background-color: #5d4037;"></button>
+                            <button class="color-swatch" data-color="purple" style="background-color: #6a1b9a;"></button>
+                            <button class="color-swatch" data-color="orange" style="background-color: #e65100;"></button>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <div class="size-header">
+                            <label class="option-label">Size</label>
+                            <a href="#" class="size-guide-link">Size Guide</a>
+                        </div>
+                        <div class="size-buttons">
+                            <button class="size-btn" data-size="xs">XS</button>
+                            <button class="size-btn" data-size="s">S</button>
+                            <button class="size-btn active" data-size="m">M</button>
+                            <button class="size-btn" data-size="l">L</button>
+                            <button class="size-btn" data-size="xl">XL</button>
+                            <button class="size-btn" data-size="xxl">XXL</button>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <label class="option-label">Quantity</label>
+                        <div class="quantity-selector">
+                            <button class="quantity-btn" id="quantityDecrease">−</button>
+                            <span class="quantity-value" id="quantityValue">1</span>
+                            <button class="quantity-btn" id="quantityIncrease">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-teal btn-add-to-cart">Add To Cart</button>
+
+                <div class="sizing-chart-section">
+                    <div class="sizing-chart-header" id="sizingChartHeader">
+                        <h3 class="sizing-chart-title">Fit & Sizing Chart</h3>
+                        <span class="sizing-chart-toggle">+</span>
+                    </div>
+                    <div class="sizing-chart-content sizing-chart-collapsed" id="sizingChartContent">
+                        <div class="sizing-info">
+                            <p><strong>XS</strong> Shoulder Width 41cm | Length 64cm</p>
+                            <p><strong>S</strong> Shoulder Width 43cm | Length 67cm</p>
+                            <p><strong>M</strong> Shoulder Width 44cm | Length 68cm</p>
+                            <p><strong>L</strong> Shoulder Width 45cm | Length 72cm</p>
+                            <p><strong>XL</strong> Shoulder Width 47cm | Length 76cm</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-description">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                </div>
+
+                <div class="care-guide">
+                    <div class="care-guide-header">
+                        <span class="care-icon">👕</span>
+                        <span class="care-title">Care Guide</span>
+                    </div>
+                    <p class="care-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section">
+        <h2 class="section-title">Reviews</h2>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-stars">★★★★☆</div>
+                <h3 class="reviewer-name">Samantha D.</h3>
+                <p class="review-text">I absolutely love this t-shirt! The design is unique and the fabric feels so comfortable. As a fellow designer, I appreciate the attention to detail. It's become my favorite go-to shirt.</p>
+                <p class="review-date">Posted on August 14, 2023</p>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <h3 class="reviewer-name">Michael R.</h3>
+                <p class="review-text">Excellent quality for the price! The material is durable and perfect for climbing. I've worn it on multiple outdoor adventures and it still looks brand new. Highly recommend!</p>
+                <p class="review-date">Posted on September 2, 2023</p>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★☆</div>
+                <h3 class="reviewer-name">Emma L.</h3>
+                <p class="review-text">Great fit and comfortable fabric. The sizing is accurate and the shirt breathes well during intense activities. The design is stylish and functional. Very satisfied with my purchase!</p>
+                <p class="review-date">Posted on September 15, 2023</p>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <h3 class="reviewer-name">James T.</h3>
+                <p class="review-text">This is one of the best climbing shirts I've owned. The quality is outstanding and it handles sweat and movement perfectly. The price point is very reasonable for such high-quality gear.</p>
+                <p class="review-date">Posted on October 5, 2023</p>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★☆</div>
+                <h3 class="reviewer-name">Sarah K.</h3>
+                <p class="review-text">Perfect for my climbing sessions! The fabric is lightweight yet durable, and the fit is just right. I love how it doesn't restrict movement. Will definitely buy more colors!</p>
+                <p class="review-date">Posted on October 18, 2023</p>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <h3 class="reviewer-name">David M.</h3>
+                <p class="review-text">Amazing product! The shirt is well-made, comfortable, and looks great. I've received many compliments on it. The value for money is excellent. This brand never disappoints!</p>
+                <p class="review-date">Posted on November 1, 2023</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- You Might Also Like Section -->
+    <section class="related-products-section">
+        <h2 class="section-title section-title-left">You might also like</h2>
+        <div class="related-products-grid">
+            <div class="related-product-card">
+                <a href="productDetails.html" class="related-product-link">
+                    <div class="related-product-image-wrapper">
+                        <img src="images/tempshirt1.png" alt="Item Name" class="related-product-image related-product-image-1">
+                        <img src="images/tempshirt2.png" alt="Item Name" class="related-product-image related-product-image-2">
+                    </div>
+                </a>
+                <h3 class="related-product-name">Item Name</h3>
+                <p class="related-product-price">$XXX.XX</p>
+                <p class="related-product-sizes">XS / S / M / L / XL / XXL</p>
+            </div>
+            <div class="related-product-card">
+                <a href="productDetails.html" class="related-product-link">
+                    <div class="related-product-image-wrapper">
+                        <img src="images/tempshirt1.png" alt="Item Name" class="related-product-image related-product-image-1">
+                        <img src="images/tempshirt2.png" alt="Item Name" class="related-product-image related-product-image-2">
+                    </div>
+                </a>
+                <h3 class="related-product-name">Item Name</h3>
+                <p class="related-product-price">$XXX.XX</p>
+            </div>
+            <div class="related-product-card">
+                <a href="productDetails.html" class="related-product-link">
+                    <div class="related-product-image-wrapper">
+                        <img src="images/tempshirt1.png" alt="Item Name" class="related-product-image related-product-image-1">
+                        <img src="images/tempshirt2.png" alt="Item Name" class="related-product-image related-product-image-2">
+                    </div>
+                </a>
+                <h3 class="related-product-name">Item Name</h3>
+                <p class="related-product-price">$XXX.XX</p>
+                <p class="related-product-sizes">XS / S / M / L / XL / XXL</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="footer-left">
+                <h2 class="footer-logo">Daey</h2>
+                <p class="footer-tagline">Climbing Apparel Store</p>
+            </div>
+            <nav class="footer-nav">
+                <a href="homepage.html" class="footer-link">Home</a>
+                <a href="productlist.html" class="footer-link">Shop</a>
+                <a href="#" class="footer-link">About Us</a>
+                <a href="#" class="footer-link">Contact Us</a>
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <p class="copyright">Copyright © 2025 Daey. All rights reserved</p>
+            <div class="footer-links">
+                <a href="#" class="footer-link-small">Privacy Policy</a>
+                <a href="#" class="footer-link-small">Terms of Use</a>
+            </div>
+            <div class="social-icons">
+                <span class="social-icon">📷</span>
+                <span class="social-icon">📘</span>
+                <span class="social-icon">🐦</span>
+                <span class="social-icon">▶</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Thumbnail click functionality
+        const thumbnails = document.querySelectorAll('.thumbnail-item');
+        const mainImage = document.getElementById('mainProductImage');
+
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', () => {
+                // Remove active class from all thumbnails
+                thumbnails.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked thumbnail
+                thumbnail.classList.add('active');
+                // Update main image (you can change the image source here)
+                // mainImage.src = thumbnail.querySelector('img').src;
+            });
+        });
+
+        // Color swatch selection
+        const colorSwatches = document.querySelectorAll('.color-swatch');
+        colorSwatches.forEach(swatch => {
+            swatch.addEventListener('click', () => {
+                colorSwatches.forEach(s => s.classList.remove('active'));
+                swatch.classList.add('active');
+            });
+        });
+
+        // Size button selection
+        const sizeButtons = document.querySelectorAll('.size-btn');
+        sizeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                sizeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Quantity selector
+        const quantityDecrease = document.getElementById('quantityDecrease');
+        const quantityIncrease = document.getElementById('quantityIncrease');
+        const quantityValue = document.getElementById('quantityValue');
+        let quantity = 1;
+
+        quantityDecrease.addEventListener('click', () => {
+            if (quantity > 1) {
+                quantity--;
+                quantityValue.textContent = quantity;
+            }
+        });
+
+        quantityIncrease.addEventListener('click', () => {
+            quantity++;
+            quantityValue.textContent = quantity;
+        });
+
+        // Sizing Chart Toggle
+        const sizingChartHeader = document.getElementById('sizingChartHeader');
+        const sizingChartContent = document.getElementById('sizingChartContent');
+        const sizingChartToggle = sizingChartHeader.querySelector('.sizing-chart-toggle');
+
+        if (sizingChartHeader && sizingChartContent) {
+            sizingChartHeader.addEventListener('click', () => {
+                if (sizingChartContent.classList.contains('sizing-chart-collapsed')) {
+                    sizingChartContent.classList.remove('sizing-chart-collapsed');
+                    sizingChartToggle.textContent = '−';
+                } else {
+                    sizingChartContent.classList.add('sizing-chart-collapsed');
+                    sizingChartToggle.textContent = '+';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
