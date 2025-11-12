@@ -1869,3 +1869,303 @@ a {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================
+   PROFILE MAIN PAGE (profileMain.php)
+   ============================================ */
+.profile-section {
+    padding: var(--spacing-section) var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xxl);
+    position: relative;
+}
+
+.profile-header-right {
+    margin-left: auto;
+}
+
+.sign-out-btn {
+    background-color: #DC3545;
+    color: var(--color-white);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.sign-out-btn:hover {
+    background-color: #C82333;
+    color: var(--color-white);
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: var(--color-light-grey);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-avatar::before {
+    content: '👤';
+    font-size: 60px;
+    opacity: 0.5;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-xs);
+}
+
+.profile-joined {
+    font-size: 16px;
+    color: var(--color-brown);
+}
+
+.profile-details-container {
+    background-color: var(--color-light-grey);
+    padding: var(--spacing-xl);
+    border-radius: 5px;
+    margin-bottom: var(--spacing-xxl);
+}
+
+.profile-details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+    align-items: start;
+}
+
+.profile-details-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-details-column h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-lg);
+    height: 22px;
+}
+
+.profile-form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.profile-form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Ensure form wrapper doesn't add extra spacing */
+.profile-details-column form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Make sure all columns have consistent spacing from heading to first field */
+.profile-details-column > h3 {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Ensure consistent spacing between fields - First Name to Last Name should match Email to Password */
+.profile-details-column:nth-child(1) .profile-form-group:nth-child(1) {
+    margin-bottom: var(--spacing-lg);
+}
+
+.profile-details-column:nth-child(2) .profile-form-group:nth-child(1) {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Ensure Password field aligns with Last Name field */
+/* The issue is that both should have the same spacing from their respective headings */
+/* Since both columns have h3 + first field + second field, they should align naturally */
+/* But we need to account for any form wrapper spacing */
+
+/* Remove any default browser form styling */
+.profile-details-column form {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* Ensure the spacing from h3 to first input is identical */
+.profile-details-column h3 + form .profile-form-group:first-child,
+.profile-details-column h3 + .profile-form-group:first-child {
+    margin-top: 0;
+}
+
+/* Ensure spacing between first and second fields is identical */
+.profile-details-column .profile-form-group:nth-child(1),
+.profile-details-column form .profile-form-group:nth-child(1) {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Explicitly align Password input with Last Name input */
+/* Add margin-top to Password field to match Last Name position */
+.profile-details-column:nth-child(2) .profile-form-group:nth-child(2) {
+    margin-top: 0;
+}
+
+/* If Password is still misaligned, add specific adjustment */
+/* This accounts for any form wrapper spacing differences */
+.profile-details-column:nth-child(2) .profile-form-group:nth-child(2) .profile-form-input {
+    margin-top: 0;
+}
+
+.profile-form-label {
+    display: block;
+    font-size: 14px;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+}
+
+.profile-form-input {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 1px solid rgba(43, 17, 7, 0.3);
+    border-radius: 5px;
+    font-size: 16px;
+    color: var(--color-dark-brown);
+    background-color: var(--color-white);
+    transition: border-color 0.3s;
+}
+
+.profile-form-input:focus {
+    outline: none;
+    border-color: var(--color-teal);
+}
+
+.profile-submit-btn {
+    background-color: var(--color-teal);
+    color: var(--color-white);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: var(--spacing-md);
+    width: fit-content;
+    align-self: flex-start;
+}
+
+.profile-submit-btn:hover {
+    background-color: var(--color-teal-dark);
+}
+
+.orders-section {
+    margin-top: var(--spacing-xxl);
+}
+
+.orders-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-xl);
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-white);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.orders-table thead {
+    background-color: var(--color-light-grey);
+}
+
+.orders-table th {
+    padding: var(--spacing-md) var(--spacing-lg);
+    text-align: left;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+    border-bottom: 2px solid var(--color-dark-brown);
+}
+
+.orders-table td {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 16px;
+    color: var(--color-dark-brown);
+    border-bottom: 1px solid var(--color-light-grey);
+}
+
+.orders-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.cancel-btn {
+    background-color: #8B0000;
+    color: var(--color-white);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+    background-color: #6B0000;
+}
+
+.empty-orders {
+    text-align: center;
+    padding: var(--spacing-xxl);
+    color: var(--color-brown);
+    font-size: 18px;
+}
+
+@media (max-width: 968px) {
+    .profile-details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .orders-table {
+        font-size: 14px;
+    }
+
+    .orders-table th,
+    .orders-table td {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}

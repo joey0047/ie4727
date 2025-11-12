@@ -56,7 +56,7 @@ $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
     </div>
 
     <div class="header-icons" style="display:flex;gap:14px;align-items:center;">
-      <a href="/account.php" aria-label="Account" >
+      <a href="<?= $BASE ?>/profileMain.php" aria-label="Account" >
         <img src="assets\icon\user.png" alt="User" style="width:20px;height:20px;">
       </a>
       <a href="/cart.php" aria-label="Cart">
