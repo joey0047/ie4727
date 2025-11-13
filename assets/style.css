@@ -1,0 +1,79 @@
+:root {
+  /* ------------------------------------
+     FONT FAMILY
+  ------------------------------------ */
+  --font-primary: "Inter", sans-serif;
+
+  /* ------------------------------------
+     FONT SIZES
+  ------------------------------------ */
+  --h1-size: 48px;
+  --h2-size: 32px;
+  --h3-size: 24px;
+  --h4-size: 20px;
+  --body-size: 16px;
+  --caption-size: 14px;
+
+  /* ------------------------------------
+     FONT WEIGHTS
+  ------------------------------------ */
+  --h1-weight: 700;
+  --h2-weight: 600;
+  --h3-weight: 500;
+  --h4-weight: 400;
+  --body-weight: 400;
+  --caption-weight: 300;
+
+  /* ------------------------------------
+     COLORS
+  ------------------------------------ */
+  --color-font-light: #2B1107;
+  --color-font-medium: #76625B;
+  --color-alt-bg-grey: #EDEDED;
+  --color-white: #FFFFFF;
+  --color-brown: #613D2E;
+  --color-img-bg-grey: #EBEBEB;
+  --color-teal: #00AFB9;
+}
+
+h1 {
+  font-family: var(--font-primary);
+  font-size: var(--h1-size);
+  font-weight: var(--h1-weight);
+  line-height: normal;
+}
+
+h2 {
+  font-family: var(--font-primary);
+  font-size: var(--h2-size);
+  font-weight: var(--h2-weight);
+  line-height: normal;
+}
+
+h3 {
+  font-family: var(--font-primary);
+  font-size: var(--h3-size);
+  font-weight: var(--h3-weight);
+  line-height: normal;
+}
+
+h4 {
+  font-family: var(--font-primary);
+  font-size: var(--h4-size);
+  font-weight: var(--h4-weight);
+  line-height: normal;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--body-size);
+  font-weight: var(--body-weight);
+  line-height: normal;
+}
+
+caption {
+  font-family: var(--font-primary);
+  font-size: var(--caption-size);
+  font-weight: var(--caption-weight);
+  line-height: normal;
+}

@@ -4,6 +4,7 @@ require __DIR__ . '/includes/config.php';
 
 /* ----------------- Newsletter form handler ----------------- */
 $newsletterMessage = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newsletter_email'])) {
     $email = trim($_POST['newsletter_email']);
 
@@ -11,13 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newsletter_email'])) 
         $newsletterMessage = 'Please enter a valid email address.';
     } else {
         // 1) Insert email into users table (newsletter-only user)
-        //    - empty first_name, last_name, password, delivery_address
-        //    - IGNORE in case the email already exists
         $stmt = $mysqli->prepare("
             INSERT IGNORE INTO users
-                (FIRST_name, last_name, email, password_hash, delivery_address, date_created)
+                (first_name, last_name, email, password_hash, delivery_address, date_created)
             VALUES
-                ('',        '',        ?,    '',            '',               NOW())
+                ('', '', ?, '', '', NOW())
         ");
         if ($stmt) {
             $stmt->bind_param('s', $email);
@@ -25,25 +24,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newsletter_email'])) 
             $stmt->close();
         }
 
-        // 2) Compose welcome email
-        $subject = 'Welcome to SHOPNAME';
-        $body = "Hey climber,\n\n"
-              . "Thanks for signing up to the SHOPNAME newsletter.\n\n"
-              . "You’ll be the first to hear about new drops, limited collections,\n"
-              . "and route-tested gear we’re building for the wall and beyond.\n\n"
-              . "In the meantime, you can start exploring the latest collection here:\n"
-              . BASE_URL . "/productlist.php\n\n"
-              . "Climb safe,\n"
-              . "The SHOPNAME Crew\n";
+        // 2) Send welcome email using PHP mail()
+        $shopName   = 'SHOPNAME';           // change this
+        $fromEmail  = 'no-reply@localhost'; // must match Mercury account
+        $replyEmail = 'support@localhost';
 
-        $headers = "From: SHOPNAME <no-reply@example.com>\r\n"
-                 . "Reply-To: support@example.com\r\n"
-                 . "Content-Type: text/plain; charset=UTF-8\r\n";
+        $subject = "Welcome to $shopName";
 
-        if (@mail($email, $subject, $body, $headers)) {
+        $body  = "Hey climber,\r\n\r\n";
+        $body .= "Thanks for signing up to the $shopName newsletter.\r\n\r\n";
+        $body .= "You’ll be the first to hear about new drops, limited collections,\r\n";
+        $body .= "and route-tested gear we’re building for the wall and beyond.\r\n\r\n";
+        $body .= "You can start exploring here:\r\n";
+        $body .= BASE_URL . "/productlist.php\r\n\r\n";
+        $body .= "Climb safe,\r\n";
+        $body .= "The $shopName Crew\r\n";
+
+        $headers  = "From: $shopName <{$fromEmail}>\r\n";
+        $headers .= "Reply-To: {$replyEmail}\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+        if (mail($email, $subject, $body, $headers)) {
             $newsletterMessage = 'Thanks for signing up! Check your inbox for a welcome email.';
         } else {
-            $newsletterMessage = 'Thanks for signing up! (Email sending is disabled on this server demo.)';
+            $newsletterMessage = 'Thanks for signing up! (Could not send email from server.)';
         }
     }
 }
@@ -143,7 +147,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
   <meta charset="UTF-8">
   <title>SHOPNAME | Climbing Apparel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/stylesheet.css">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/style.css">
   <style>
     body {
       font-family: "Lexend Deca", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -154,25 +158,31 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     }
 
     /* Hero */
-    .hero {
+    .herohm {
       position: relative;
       height: 520px;
-      margin-bottom: 56px;
+      margin-bottom: 0px;
       background-image: url("<?= BASE_URL ?>/assets/images/tempbanner.png"); /* change to your hero img */
       background-size: cover;
       background-position: center;
       color: #fff;
     }
-    .hero-overlay {
+    .hero-overlayhm {
       position: absolute;
+      display:flex;
+      justify-content:center:
       inset: 0;
       background: linear-gradient(to right, rgba(0,0,0,.55), rgba(0,0,0,.15));
     }
-    .hero-content {
+    .hero-contents {
       position: relative;
       z-index: 1;
       padding: 120px 40px;
       max-width: 560px;
+      display: grid;
+      align-items:center;
+      justify-items: left;
+      text-align:left;
     }
     .hero-title {
       font-size: 40px;
@@ -184,6 +194,8 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       line-height: 1.6;
       margin-bottom: 24px;
       max-width: 420px;
+      width: 100%;
+      display: inline-block;
     }
     .hero-btn {
       display: inline-block;
@@ -197,13 +209,14 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       text-decoration: none;
       cursor: pointer;
       transition: background .2s ease, transform .05s ease;
+      width: fit-content;
     }
     .hero-btn:hover { background:#1298a0; }
     .hero-btn:active { transform: translateY(1px); }
 
     /* Section headers */
     .section {
-      padding: 0 20px 60px;
+      padding: 80px 72px 40px 72px;
     }
     .section-header {
       margin-bottom: 24px;
@@ -215,6 +228,10 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     .section-subtitle {
       font-size: 14px;
       color: #555;
+    }
+
+    .section-abt{
+      padding: 80px 0;
     }
 
     /* New Arrivals */
@@ -276,6 +293,9 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     /* About / company section */
     .about-section-inner {
       display: grid;
+      width: 100%;
+      padding: 24px 72px;
+      background: var(--color-alt-bg-grey);
       grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
       gap: 32px;
       align-items: center;
@@ -317,12 +337,12 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       font-weight:600;
       text-decoration:none;
       cursor:pointer;
+      margin-top: 16px;
     }
     .about-btn:hover { background:#1298a0; }
 
 /* Shop Collection */
 .shop-collection-section {
-  background: #000;           /* black band like the design */
   color: #1a0c06;
   padding-top: 40px;
   padding-bottom: 60px;
@@ -434,24 +454,27 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     height: fit-content;
       display: flex;
   justify-content: center;
+  
   }
 
   .newsletter-overlay {
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 100%;
     text-align: center;
+    height: fit-content;
+    display: grid;
+    padding: 24px 0px;
   }
 
   .newsletter-title {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
     margin-bottom: 8px;
   }
 
-  .newsletter-subtitle {
+  .newsletter-subtitles {
     font-size: 16px;
     font-weight: 400;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
   }
 
   .newsletter-form {
@@ -509,9 +532,9 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
   <main class="landing-page">
 
     <!-- Hero / Banner -->
-    <section class="hero">
+    <section class="herohm">
       <div class="hero-overlay"></div>
-      <div class="hero-content">
+      <div class="hero-contents">
         <h1 class="hero-title">Gear up for your next send.</h1>
         <p class="hero-text">
           Route-tested climbing apparel designed to move with you—on the wall, at the gym,
@@ -524,7 +547,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     <!-- New Arrival / Best Seller / Sale -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">New Arrival / Best Seller / Sale</h2>
+        <h2 class="section-title">New Arrival</h2>
       </div>
 
       <div class="new-arrivals-grid">
@@ -543,7 +566,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
             </a>
             <div class="product-card-name">
               <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$p['product_id'] ?>">
-                <?= htmlspecialchars($p['product_name']) ?>
+                <body><?= htmlspecialchars($p['product_name']) ?></body>
               </a>
             </div>
             <div class="product-card-price">
@@ -560,23 +583,18 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     </section>
 
     <!-- Company Related / About -->
-    <section class="section">
+    <section class="section-abt">
       <div class="about-section-inner">
         <div class="about-image"></div>
         <div>
-          <div class="about-copy-highlight">About SHOPNAME</div>
+          <div class="about-copy-highlight"><body>About SHOPNAME</body></div>
           <h3 class="about-copy-title">Climbing-first apparel with everyday comfort.</h3>
-          <p class="about-copy-body">
-            We started SHOPNAME after too many sessions spent in gear that felt
+          <p><body class="about-copy-body">
+            We started Daey after too many sessions spent in gear that felt
             like a compromise—heavy at the gym and out of place everywhere else.
             Today, every piece we make is built around three principles:
             unrestricted movement, durable construction, and clean, low-key design.
-          </p>
-          <p class="about-copy-body">
-            From overbuilt heavyweight tees that hold their shape to lightweight
-            shorts that dry fast on hot approaches, our apparel is tested by real climbers
-            and refined with every runout. No gimmicks, just gear that works as hard as you do.
-          </p>
+              </body></p>
           <a href="<?= BASE_URL ?>/about.php" class="about-btn">Learn More</a>
         </div>
       </div>
@@ -636,7 +654,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
           <div>
             <div class="shop-collection-text-title">Accessories</div>
             <p class="shop-collection-copy">
-              Chalk buckets, socks, and small essentials to round out your kit and
+              Chalk buckets and socks to round out your kit and
               make every session smoother.
             </p>
             <a href="<?= BASE_URL ?>/productlist.php?category=4,5" class="shop-collection-link">
@@ -651,7 +669,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
   <section class="newsletter-section">
     <div class="newsletter-overlay">
       <h2 class="newsletter-title">Join Our Newsletter</h2>
-      <p class="newsletter-subtitle">
+      <p class="newsletter-subtitles">
         Sign up for deals, new products and promotions.
       </p>
       <form class="newsletter-form" method="post" action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>">

@@ -4,8 +4,10 @@
 $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 ?>
 <header class="header">
+    <link rel="stylesheet" href="stylesheet.css">
   <style>
-    .header-top{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;}
+    .header {padding:0;}
+    .header-top{display:grid; grid-template-columns: repeat(3, 1fr);align-items:center;justify-content:space-between;padding:16px 72px; max-width: 1440px; height: fit-content}
     .nav-left{display:flex;gap:24px;align-items:center;}
     .nav-link, .shop-toggle, .shop-link{
       text-decoration:none;color:inherit;font:inherit;background:none;border:0;padding:0;cursor:pointer;
@@ -28,7 +30,7 @@ $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
       <!-- Shop (click to open; stays open until click-away or Esc) -->
         <div class="nav-item nav-shop" id="navShop" style="position:relative;display:flex;align-items:center;gap:6px;">
         <!-- Clicking 'Shop' goes to ALL products (no filter) -->
-        <a href="<?= $BASE ?>/productlist.php" class="nav-link" style="text-decoration:none;color:inherit;">Shop</a>
+        <a href="<?= $BASE ?>/productlist.php" class="nav-link" style="text-decoration:none;color:inherit;"><body>Shop</body></a>
 
         <!-- Caret toggles dropdown -->
         <button class="shop-toggle" id="shopToggle" aria-haspopup="true" aria-expanded="false" aria-controls="shopMenu"
@@ -40,19 +42,18 @@ $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
             display:none; position:absolute; left:0; top:120%;
             min-width:240px; background:#fff; border:1px solid #ddd;
             box-shadow:0 4px 16px rgba(0,0,0,.08); border-radius:4px; padding:8px 0; z-index:50;">
-            <a href="<?= $BASE ?>/productlist.php"              class="shop-link" role="menuitem">Shop All</a>
-            <a href="<?= $BASE ?>/productlist.php?category=1"   class="shop-link" role="menuitem">Tops</a>         <!-- Shirts -->
-            <a href="<?= $BASE ?>/productlist.php?category=2,3" class="shop-link" role="menuitem">Bottoms</a>      <!-- Shorts + Long Pants -->
-            <a href="<?= $BASE ?>/productlist.php?category=4,5" class="shop-link" role="menuitem">Accessories</a>  <!-- Socks + Chalk Bags -->
+            <a href="<?= $BASE ?>/productlist.php"              class="shop-link" role="menuitem"><body>Shop All</body></a>
+            <a href="<?= $BASE ?>/productlist.php?category=1"   class="shop-link" role="menuitem"><body>Tops</body></a>         <!-- Shirts -->
+            <a href="<?= $BASE ?>/productlist.php?category=2,3" class="shop-link" role="menuitem"><body>Bottoms</body></a>      <!-- Shorts + Long Pants -->
+            <a href="<?= $BASE ?>/productlist.php?category=4,5" class="shop-link" role="menuitem"><body>Accessories</body></a>  <!-- Socks + Chalk Bags -->
         </div>
         </div>  
 
-      <a href="<?= $BASE ?><?= $BASE ?>/aboutus.php" class="nav-link">About Us</a>
-      <a href="<?= $BASE ?>/contact.php" class="nav-link">Contact Us</a>
+      <a href="<?= $BASE ?>/aboutus.php" class="nav-link"><body>About</body></a>
     </nav>
 
     <div class="logo">
-      <a href="<?= $BASE ?><?= $BASE ?>/homepage.php" style="text-decoration:none; color:#16B1B9;"><h1 style="margin:0;">SHOPNAME</h1></a>
+      <a href="<?= $BASE ?>/homepage.php" style="text-decoration:none; color:#16B1B9;"><h1 style="margin:0;">Daey</h1></a>
     </div>
 
     <div class="header-icons" style="display:flex;gap:14px;align-items:center;">

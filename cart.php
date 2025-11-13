@@ -1,554 +1,402 @@
 <?php
-// cart.php – cart drawer partial
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+// cart.php
+session_start();
+require __DIR__ . '/_db.php'; // adjust path if your DB file is elsewhere
+
+// ------------------------------------------------------
+//  Helpers: Cart ID & Cart data
+// ------------------------------------------------------
+
+function getCartIdOrNull(): ?int
+{
+    return isset($_SESSION['cart_id']) ? (int)$_SESSION['cart_id'] : null;
 }
-require __DIR__ . '/includes/db.php';
-require __DIR__ . '/includes/config.php';
 
-// TODO: replace with real logged-in user
-$userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 1;
+function createCartAndStoreInSession(mysqli $db): int
+{
+    $userId = $_SESSION['user_id'] ?? null;
 
-$cartId = null;
-$items  = [];
-$subtotal = 0.0;
+    if ($userId === null) {
+        $sql = "INSERT INTO carts (user_id, date_created) VALUES (NULL, NOW())";
+        $stmt = $db->prepare($sql);
+    } else {
+        $sql = "INSERT INTO carts (user_id, date_created) VALUES (?, NOW())";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param('i', $userId);
+    }
 
-// Find latest cart for this user
-$stmt = $mysqli->prepare("SELECT cart_id FROM carts WHERE user_id = ? ORDER BY date_created DESC LIMIT 1");
-$stmt->bind_param('i', $userId);
-$stmt->execute();
-$stmt->bind_result($cartId);
-$stmt->fetch();
-$stmt->close();
+    $stmt->execute();
+    $cartId = $stmt->insert_id;
+    $stmt->close();
 
-if ($cartId) {
+    $_SESSION['cart_id'] = $cartId;
+    return $cartId;
+}
+
+function getOrCreateCartId(mysqli $db): int
+{
+    $cartId = getCartIdOrNull();
+    if ($cartId) {
+        return $cartId;
+    }
+    return createCartAndStoreInSession($db);
+}
+
+/**
+ * Get cart items & subtotal from DB.
+ * Returns [array $items, float $subtotal]
+ */
+function getCartData(mysqli $db): array
+{
+    $cartId = getCartIdOrNull();
+    if (!$cartId) {
+        return [[], 0.0];
+    }
+
     $sql = "
-      SELECT 
-        ci.cart_item_id,
-        ci.quantity,
-        v.variant_id,
-        v.size,
-        v.color_hex,
-        p.product_id,
-        p.product_name,
-        p.base_price,
-        p.discount_flat,
-        COALESCE(
-          (SELECT image_url FROM product_images pi 
-             WHERE pi.product_id = p.product_id 
-               AND (pi.variant_id = v.variant_id OR pi.variant_id IS NULL)
-               AND pi.is_primary = 1
-             ORDER BY pi.sort_order ASC, pi.image_id ASC LIMIT 1),
-          (SELECT image_url FROM product_images pi2 
-             WHERE pi2.product_id = p.product_id
-             ORDER BY pi2.is_primary DESC, pi2.sort_order ASC, pi2.image_id ASC LIMIT 1)
-        ) AS image_url
-      FROM cart_items ci
-      JOIN variants v ON v.variant_id = ci.variant_id
-      JOIN products p ON p.product_id = v.product_id
-      WHERE ci.cart_id = ?
-      ORDER BY ci.cart_item_id DESC
+        SELECT 
+            ci.cart_item_id,
+            ci.variant_id,
+            ci.quantity,
+            v.size,
+            v.color_hex,
+            v.product_id,
+            p.product_name,
+            p.base_price,
+            COALESCE(p.discount_flat, 0) AS discount_flat,
+            COALESCE(pi.image_url, '') AS image_url
+        FROM cart_items ci
+        INNER JOIN variant v       ON ci.variant_id = v.variant_id
+        INNER JOIN products p      ON v.product_id = p.product_id
+        LEFT JOIN product_images pi 
+            ON pi.variant_id = v.variant_id AND pi.is_primary = 1
+        WHERE ci.cart_id = ?
+        ORDER BY ci.date_added DESC
     ";
-    $stmt = $mysqli->prepare($sql);
+
+    $stmt = $db->prepare($sql);
     $stmt->bind_param('i', $cartId);
     $stmt->execute();
     $res = $stmt->get_result();
+
+    $items = [];
+    $subtotal = 0.0;
+
     while ($row = $res->fetch_assoc()) {
-        $priceOrig = (float)$row['base_price'];
-        $disc      = (float)$row['discount_flat'];
-        $unitPrice = max($priceOrig - $disc, 0);
+        $unitPrice = (float)$row['base_price'] - (float)$row['discount_flat'];
+        if ($unitPrice < 0) $unitPrice = 0;
         $row['unit_price'] = $unitPrice;
         $row['line_total'] = $unitPrice * (int)$row['quantity'];
-        $subtotal += $row['line_total'];
         $items[] = $row;
+        $subtotal += $row['line_total'];
     }
+
     $stmt->close();
+    return [$items, $subtotal];
 }
 
-function cart_fmt_price($n) { return '$' . number_format($n, 2); }
-?>
+/**
+ * Build the HTML for the items list, used for initial render & AJAX responses.
+ */
+function buildCartItemsHtml(array $items): string
+{
+    if (empty($items)) {
+        return '<p style="padding: 1rem 0; color:#777;">Your cart is empty.</p>';
+    }
 
-<style>
-/* Cart drawer */
-.cart-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.35);
-  display: none;
-  z-index: 900;
-}
-
-.cart-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 420px;
-  max-width: 100%;
-  height: 100vh;
-  background: #ffffff;
-  box-shadow: -4px 0 12px rgba(0,0,0,.15);
-  transform: translateX(100%);
-  transition: transform .25s ease;
-  display: flex;
-  flex-direction: column;
-  z-index: 901;
-}
-
-.cart-drawer.open {
-  transform: translateX(0);
-}
-
-.cart-drawer-backdrop.open {
-  display: block;
-}
-
-/* Header */
-.cart-header {
-  padding: 20px 20px 12px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.cart-header-title {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.cart-close-btn {
-  background: none;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-/* Scrollable items area */
-.cart-items-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px 20px 20px;
-}
-
-/* Single item */
-.cart-item {
-  display: grid;
-  grid-template-columns: 80px 1fr 70px;
-  gap: 12px;
-  margin-bottom: 16px;
-  align-items: center;
-}
-
-.cart-item-image {
-  width: 80px;
-  height: 80px;
-  background: #f5f5f5;
-  overflow: hidden;
-}
-
-.cart-item-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cart-item-name {
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.cart-item-meta {
-  font-size: 12px;
-  color: #777;
-}
-
-.cart-item-price {
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 6px;
-}
-
-.cart-item-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-/* Qty controls */
-.cart-qty-control {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  border: 1px solid #ddd;
-  overflow: hidden;
-}
-
-.cart-qty-btn {
-  width: 26px;
-  height: 30px;
-  border: none;
-  background: #fafafa;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.cart-qty-value {
-  min-width: 24px;
-  text-align: center;
-  font-size: 14px;
-}
-
-.cart-item-remove-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-/* Footer */
-.cart-footer {
-  border-top: 1px solid #eee;
-  padding: 14px 20px 20px;
-  background: #fff;
-}
-
-.cart-subtotal-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.cart-subtotal-label {
-  font-size: 16px;
-}
-
-.cart-subtotal-value {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.cart-checkout-btn {
-  width: 100%;
-  padding: 12px 18px;
-  border-radius: 4px;
-  border: none;
-  background: #16B1B9;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.cart-checkout-btn:hover {
-  background: #1298a0;
-}
-</style>
-
-<div id="cartBackdrop" class="cart-drawer-backdrop"></div>
-
-<aside id="cartDrawer" class="cart-drawer" aria-hidden="true">
-  <header class="cart-header">
-    <div class="cart-header-title">Your Cart</div>
-    <button type="button" class="cart-close-btn" id="cartCloseBtn">&times;</button>
-  </header>
-
-  <div class="cart-items-wrapper">
-    <?php if (empty($items)): ?>
-      <p>Your cart is empty.</p>
-    <?php else: ?>
-      <?php foreach ($items as $item): ?>
-        <div class="cart-item" data-item-id="<?= (int)$item['cart_item_id'] ?>">
-          <a class="cart-item-image" href="<?= BASE_URL ?>/product.php?id=<?= (int)$item['product_id'] ?>">
-            <img src="<?= htmlspecialchars($item['image_url'] ?: (BASE_URL . '/assets/images/tempimage.png')) ?>"
-                 alt="<?= htmlspecialchars($item['product_name']) ?>">
-          </a>
-
-          <div>
-            <div class="cart-item-name">
-              <?= htmlspecialchars($item['product_name']) ?>
+    ob_start();
+    foreach ($items as $item):
+        $variantId  = (int)$item['variant_id'];
+        $name       = htmlspecialchars($item['product_name']);
+        $size       = htmlspecialchars($item['size'] ?? '');
+        $colorHex   = htmlspecialchars($item['color_hex'] ?? '');
+        $qty        = (int)$item['quantity'];
+        $price      = number_format($item['unit_price'], 2);
+        $imgUrl     = $item['image_url'] ?: '/images/placeholder-product.png';
+        ?>
+        <div class="cart-item" data-variant-id="<?= $variantId ?>">
+            <div class="cart-item-img">
+                <img src="<?= htmlspecialchars($imgUrl) ?>" alt="<?= $name ?>">
             </div>
-            <div class="cart-item-meta">
-              Size <?= htmlspecialchars(strtoupper($item['size'])) ?> |
-              Color <?= htmlspecialchars(strtoupper($item['color_hex'])) ?>
+            <div class="cart-item-main">
+                <div class="cart-item-title"><?= $name ?></div>
+                <div class="cart-item-meta">
+                    <?= $size ?>
+                    <?= ($size && $colorHex) ? ' | ' : '' ?>
+                    <?= $colorHex ? 'Color' : '' ?>
+                </div>
+                <div class="cart-item-price">$<?= $price ?></div>
             </div>
-            <div class="cart-item-price">
-              <?= cart_fmt_price($item['unit_price']) ?>
+            <div class="cart-item-side">
+                <button class="cart-remove-btn" type="button" data-variant-id="<?= $variantId ?>"></button>
+                <div class="cart-qty-control">
+                    <button class="cart-qty-btn" type="button"
+                            data-variant-id="<?= $variantId ?>" data-direction="dec">−</button>
+                    <span class="cart-qty-value"><?= $qty ?></span>
+                    <button class="cart-qty-btn" type="button"
+                            data-variant-id="<?= $variantId ?>" data-direction="inc">+</button>
+                </div>
             </div>
-          </div>
-
-          <div class="cart-item-actions">
-            <div class="cart-qty-control">
-              <button class="cart-qty-btn" type="button"
-                      data-action="minus"
-                      data-item-id="<?= (int)$item['cart_item_id'] ?>">−</button>
-              <div class="cart-qty-value"><?= (int)$item['quantity'] ?></div>
-              <button class="cart-qty-btn" type="button"
-                      data-action="plus"
-                      data-item-id="<?= (int)$item['cart_item_id'] ?>">+</button>
-            </div>
-            <button class="cart-item-remove-btn" type="button"
-                    data-action="remove"
-                    data-item-id="<?= (int)$item['cart_item_id'] ?>">🗑</button>
-          </div>
         </div>
-      <?php endforeach; ?>
-    <?php endif; ?>
-  </div>
+        <?php
+    endforeach;
+    return ob_get_clean();
+}
 
-  <footer class="cart-footer">
-    <div class="cart-subtotal-row">
-      <span class="cart-subtotal-label">Subtotal</span>
-      <span class="cart-subtotal-value"><?= cart_fmt_price($subtotal) ?></span>
-    </div>
-    <button type="button" class="cart-checkout-btn"
-            onclick="window.location.href='<?= BASE_URL ?>/checkout.php';">
-      Check Out
-    </button>
-  </footer>
-</aside>
+// ------------------------------------------------------
+//  AJAX endpoint (add/update/remove/fetch)
+// ------------------------------------------------------
 
-<script>
-  // Build VARIANTS array manually without json_encode
-  const VARIANTS = [
-    <?php foreach ($variants as $v): ?>
-      {
-        variant_id: <?= (int)$v['variant_id'] ?>,
-        color: "<?= strtoupper($v['color_hex']) ?>",
-        size: "<?= strtoupper($v['size']) ?>",
-        stock_qty: <?= (int)$v['stock_qty'] ?>
-      },
-    <?php endforeach; ?>
-  ];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    $action   = $_POST['action'];
+    $variantId = isset($_POST['variant_id']) ? (int)$_POST['variant_id'] : 0;
+    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
 
-  // Default color + size from PHP
-  <?php if ($defaultVariant): ?>
-    let selectedColor = "<?= strtoupper($defaultVariant['color_hex']) ?>";
-    let selectedSize  = "<?= strtoupper($defaultVariant['size']) ?>";
-  <?php else: ?>
-    let selectedColor = null;
-    let selectedSize  = null;
-  <?php endif; ?>
-
-  function findVariant(color, size) {
-    if (!color || !size) return null;
-    return VARIANTS.find(v => v.color === color && v.size === size) || null;
-  }
-
-  function updateStockMessage(variant) {
-    const el = document.getElementById('stockMessage');
-    if (!el) return;
-    if (!variant) {
-      el.textContent = 'Please select color and size.';
-      el.className = 'stock-message';
-      return;
-    }
-    if (variant.stock_qty > 0) {
-      el.textContent = `In stock (${variant.stock_qty} available)`;
-      el.className = 'stock-message in';
-    } else {
-      el.textContent = 'Out of stock';
-      el.className = 'stock-message out';
-    }
-  }
-
-  // Show images by COLOR (all sizes of same color share images)
-  function updateImagesForColor(colorHex) {
-    const allThumbs = Array.from(document.querySelectorAll('.product-thumb'));
-    if (!allThumbs.length) return;
-
-    const normColor = colorHex ? colorHex.toUpperCase() : null;
-    const colorThumbs = [];
-    const productThumbs = [];
-
-    allThumbs.forEach(btn => {
-      const c = (btn.dataset.color || '').toUpperCase(); // "" for product-level
-      if (c) {
-        if (!normColor || c === normColor) {
-          colorThumbs.push(btn);
-        }
-      } else {
-        productThumbs.push(btn);
-      }
-    });
-
-    // If we have color-specific images for this color, use only those.
-    // Otherwise, fallback to product-level images.
-    let visibleThumbs;
-    if (normColor && colorThumbs.length) {
-      visibleThumbs = colorThumbs;
-    } else if (productThumbs.length) {
-      visibleThumbs = productThumbs;
-    } else {
-      visibleThumbs = allThumbs; // total fallback
+    if (!in_array($action, ['add', 'update', 'remove', 'fetch'], true)) {
+        echo json_encode(['ok' => false, 'message' => 'Invalid action']);
+        exit;
     }
 
-    allThumbs.forEach(btn => {
-      const show = visibleThumbs.includes(btn);
-      btn.style.display = show ? 'block' : 'none';
-      btn.classList.remove('active');
-    });
+    try {
+        if ($action === 'add') {
+            if ($variantId <= 0) {
+                throw new Exception('Missing variant ID.');
+            }
 
-    // Main image = first visible thumb
-    if (visibleThumbs.length) {
-      const first = visibleThumbs[0];
-      first.classList.add('active');
-      const main = document.getElementById('mainImage');
-      if (main && first.dataset.imageUrl) {
-        main.src = first.dataset.imageUrl;
-      }
-    }
-  }
+            $cartId = getOrCreateCartId($mysqli);
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const colorBtns    = document.querySelectorAll('.color-swatch');
-    const sizeBtns     = document.querySelectorAll('.size-option');
-    const variantInput = document.getElementById('selectedVariantId');
-    const addBtn       = document.getElementById('addToCartBtn');
-    const qtyInput     = document.getElementById('qtyInput');
-    const qtyMinus     = document.getElementById('qtyMinus');
-    const qtyPlus      = document.getElementById('qtyPlus');
+            // Check if item exists
+            $sql = "SELECT cart_item_id, quantity FROM cart_items WHERE cart_id = ? AND variant_id = ?";
+            $stmt = $mysqli->prepare($sql);
+            $stmt->bind_param('ii', $cartId, $variantId);
+            $stmt->execute();
+            $res = $stmt->get_result();
 
-    // Thumbnails: click to update main image
-    document.querySelectorAll('.product-thumb').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.product-thumb').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const imgUrl = btn.dataset.imageUrl;
-        const main = document.getElementById('mainImage');
-        if (main && imgUrl) main.src = imgUrl;
-      });
-    });
-
-    // Color selection
-    colorBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        colorBtns.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedColor = btn.dataset.color.toUpperCase();
-
-        // Update size availability for this color
-        sizeBtns.forEach(sbtn => {
-          const sz = sbtn.dataset.size.toUpperCase();
-          const v = findVariant(selectedColor, sz);
-          if (!v) {
-            sbtn.classList.add('disabled');
-          } else {
-            sbtn.classList.remove('disabled');
-          }
-        });
-
-        const current = findVariant(selectedColor, selectedSize);
-        if (!current) {
-          selectedSize = null;
-          sizeBtns.forEach(s => s.classList.remove('selected'));
+            if ($row = $res->fetch_assoc()) {
+                $newQty = (int)$row['quantity'] + $quantity;
+                $update = $mysqli->prepare("UPDATE cart_items SET quantity = ? WHERE cart_item_id = ?");
+                $update->bind_param('ii', $newQty, $row['cart_item_id']);
+                $update->execute();
+                $update->close();
+            } else {
+                $insert = $mysqli->prepare("
+                    INSERT INTO cart_items (cart_id, variant_id, quantity, date_added)
+                    VALUES (?, ?, ?, NOW())
+                ");
+                $insert->bind_param('iii', $cartId, $variantId, $quantity);
+                $insert->execute();
+                $insert->close();
+            }
+            $stmt->close();
         }
 
-        const variant = findVariant(selectedColor, selectedSize);
-        if (variant) {
-          variantInput.value = variant.variant_id;
-          updateStockMessage(variant);
-        } else {
-          variantInput.value = '';
-          updateStockMessage(null);
+        if ($action === 'update') {
+            if ($variantId <= 0) throw new Exception('Missing variant ID.');
+            $cartId = getCartIdOrNull();
+            if (!$cartId) throw new Exception('No active cart.');
+
+            if ($quantity <= 0) {
+                $del = $mysqli->prepare("DELETE FROM cart_items WHERE cart_id = ? AND variant_id = ?");
+                $del->bind_param('ii', $cartId, $variantId);
+                $del->execute();
+                $del->close();
+            } else {
+                $upd = $mysqli->prepare("
+                    UPDATE cart_items 
+                    SET quantity = ? 
+                    WHERE cart_id = ? AND variant_id = ?
+                ");
+                $upd->bind_param('iii', $quantity, $cartId, $variantId);
+                $upd->execute();
+                $upd->close();
+            }
         }
-        updateImagesForColor(selectedColor);
-      });
-    });
 
-    // Size selection
-    sizeBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.classList.contains('disabled')) return;
-        sizeBtns.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedSize = btn.dataset.size.toUpperCase();
-
-        const variant = findVariant(selectedColor, selectedSize);
-        if (variant) {
-          variantInput.value = variant.variant_id;
-          updateStockMessage(variant);
-        } else {
-          variantInput.value = '';
-          updateStockMessage(null);
+        if ($action === 'remove') {
+            if ($variantId <= 0) throw new Exception('Missing variant ID.');
+            $cartId = getCartIdOrNull();
+            if ($cartId) {
+                $del = $mysqli->prepare("DELETE FROM cart_items WHERE cart_id = ? AND variant_id = ?");
+                $del->bind_param('ii', $cartId, $variantId);
+                $del->execute();
+                $del->close();
+            }
         }
-        updateImagesForColor(selectedColor);
-      });
-    });
 
-    // Quantity controls
-    if (qtyMinus && qtyInput) {
-      qtyMinus.addEventListener('click', () => {
-        let v = parseInt(qtyInput.value || '1', 10);
-        if (isNaN(v) || v <= 1) v = 1;
-        else v -= 1;
-        qtyInput.value = v;
-      });
+        // For all actions we return updated cart data:
+        [$items, $subtotal] = getCartData($mysqli);
+        $html = buildCartItemsHtml($items);
+
+        echo json_encode([
+            'ok'       => true,
+            'html'     => $html,
+            'subtotal' => '$' . number_format($subtotal, 2),
+        ]);
+        exit;
+
+    } catch (Throwable $e) {
+        echo json_encode([
+            'ok'      => false,
+            'message' => $e->getMessage(),
+        ]);
+        exit;
     }
-    if (qtyPlus && qtyInput) {
-      qtyPlus.addEventListener('click', () => {
-        let v = parseInt(qtyInput.value || '1', 10);
-        if (isNaN(v) || v < 1) v = 1;
-        else v += 1;
-        qtyInput.value = v;
-      });
-    }
+}
 
-    // Add to Cart → calls add_to_cart.php and opens drawer / shows confirmation
-    if (addBtn) {
-      addBtn.addEventListener('click', () => {
-        const variantId = parseInt(variantInput.value || '0', 10);
-        if (!variantId) {
-          alert('Please select a color and size before adding to cart.');
-          return;
+// ------------------------------------------------------
+//  Drawer renderer (use in products.php)
+// ------------------------------------------------------
+
+function renderCartDrawer(mysqli $db): void
+{
+    [$items, $subtotal] = getCartData($db);
+    $itemsHtml = buildCartItemsHtml($items);
+    $subtotalFormatted = '$' . number_format($subtotal, 2);
+    ?>
+
+    <!-- Cart Overlay & Drawer -->
+    <div id="cart-overlay" class="cart-overlay" onclick="closeCartDrawer()"></div>
+
+    <aside id="cart-drawer" class="cart-drawer" aria-hidden="true">
+        <header class="cart-header">
+            <h2 class="cart-title">Your Cart</h2>
+            <button class="cart-close-btn" type="button"
+                    onclick="closeCartDrawer()" aria-label="Close cart">
+                &times;
+            </button>
+        </header>
+
+        <div id="cart-items" class="cart-items">
+            <?= $itemsHtml ?>
+        </div>
+
+        <footer class="cart-footer">
+            <div class="cart-subtotal-row">
+                <span>Subtotal</span>
+                <span id="cart-subtotal"><?= $subtotalFormatted ?></span>
+            </div>
+            <button class="cart-checkout-btn" type="button" onclick="handleCheckout()">
+                Check Out
+            </button>
+        </footer>
+    </aside>
+
+    <!-- Cart Drawer Styles -->
+    <style>
+        .cart-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease;
+            z-index: 998;
         }
-        const qty = parseInt(qtyInput.value || '1', 10);
-        if (!qty || qty < 1) {
-          alert('Please enter a valid quantity.');
-          return;
+        .cart-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
-
-        const formData = new URLSearchParams();
-        formData.append('variant_id', String(variantId));
-        formData.append('quantity', String(qty));
-
-        fetch('<?= BASE_URL ?>/add_to_cart.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          },
-          body: formData.toString(),
-        })
-        .then(res => res.json())
-        .then(data => {
-          console.log('add_to_cart response:', data);
-          if (!data.ok) {
-            alert(data.message || 'Unable to add to cart.');
-            return;
-          }
-
-          // If the cart drawer JS is loaded, open it
-          if (typeof window.openCartDrawer === 'function') {
-            window.openCartDrawer();
-          } else {
-            // Fallback: at least tell the user it worked
-            alert('Added to cart!');
-          }
-        })
-        .catch(err => {
-          console.error('add_to_cart error:', err);
-          alert('Network error while adding to cart.');
-        });
-      });
-    }
-
-    // Initial images for default variant (if any)
-    <?php if ($defaultVariant): ?>
-      updateImagesForColor("<?= strtoupper($defaultVariant['color_hex']) ?>");
-    <?php else: ?>
-      updateImagesForColor(null);
-    <?php endif; ?>
-  });
-</script>
-
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            box-shadow: -4px 0 25px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        .cart-drawer.open {
+            transform: translateX(0);
+        }
+        .cart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        .cart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .cart-close-btn {
+            border: none;
+            background: transparent;
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem 1.5rem 1rem;
+        }
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f3f3;
+        }
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: #f6f6f6;
+        }
+        .cart-item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .cart-item-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .cart-item-title {
+            font-size: 0.98rem;
+            font-weight: 500;
+            color: #222;
+            margin-bottom: 0.25rem;
+        }
+        .cart-item-meta {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 0.35rem;
+        }
+        .cart-item-price {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .cart-item-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 0.4rem;
+        }
+        .cart-remove-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .cart-remove-btn::before {
+            content: "🗑";
+        }
+        .cart-qty-control {
+            display: inline-flex;
+            align-items: center;
+            gap:
