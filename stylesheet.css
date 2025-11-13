@@ -2583,3 +2583,312 @@ a {
         font-size: 20px;
     }
 }
+
+/* ============================================
+   ABOUT US PAGE (aboutus.php)
+   ============================================ */
+.about-hero {
+    position: relative;
+    height: 500px;
+    background-image: url('assets/images/tempbanner.png');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.about-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: var(--spacing-xl) var(--spacing-xxl);
+    border-radius: 5px;
+    max-width: 800px;
+    text-align: center;
+}
+
+.about-hero-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--color-white);
+    margin-bottom: var(--spacing-md);
+}
+
+.about-hero-caption {
+    font-size: 18px;
+    color: var(--color-white);
+    opacity: 0.9;
+}
+
+.about-intro-section {
+    padding: var(--spacing-section) var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.about-intro-text {
+    font-size: 16px;
+    color: var(--color-brown);
+    line-height: 1.8;
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto var(--spacing-lg);
+}
+
+.about-intro-text:last-child {
+    margin-bottom: 0;
+}
+
+/* Premium Quality Materials Section - Grey Background */
+.about-premium-section {
+    padding-top: var(--spacing-section);
+    padding-bottom: var(--spacing-section);
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+    width: 100%;
+    background-color: #f5f5f5;
+}
+
+.about-premium-wrapper {
+    display: flex;
+    gap: var(--spacing-xxl);
+    align-items: center;
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.about-premium-image {
+    flex: 0 0 400px;
+    max-width: 400px;
+}
+
+.about-premium-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    object-fit: cover;
+    display: block;
+}
+
+.about-premium-content {
+    flex: 1;
+}
+
+/* Feature Section - No Background */
+.about-feature-section {
+    padding: var(--spacing-section) var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.about-feature-section-quote {
+    padding-top: var(--spacing-section);
+    padding-bottom: var(--spacing-section);
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.about-feature-wrapper {
+    display: flex;
+    gap: var(--spacing-xxl);
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.about-feature-wrapper.reverse {
+    flex-direction: row-reverse;
+}
+
+.about-feature-image {
+    flex: 0 0 400px;
+    max-width: 400px;
+}
+
+.about-feature-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    object-fit: cover;
+    display: block;
+}
+
+.about-feature-content {
+    flex: 1;
+}
+
+.about-feature-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-md);
+}
+
+.about-feature-text {
+    font-size: 16px;
+    color: var(--color-brown);
+    line-height: 1.8;
+    margin-bottom: var(--spacing-lg);
+}
+
+.about-quote {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+    font-style: italic;
+}
+
+.about-quote-author {
+    font-size: 16px;
+    color: var(--color-brown);
+}
+
+.about-video-section {
+    padding-top: var(--spacing-section);
+    padding-bottom: var(--spacing-section);
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+    text-align: center;
+}
+
+.about-video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+}
+
+.about-video-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Adventure Section - Last Section with Wide Image */
+.about-adventure-section {
+    padding-top: var(--spacing-section);
+    padding-bottom: var(--spacing-section);
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.about-adventure-wrapper {
+    display: flex;
+    gap: var(--spacing-xxl);
+    align-items: center;
+}
+
+.about-adventure-image {
+    flex: 1.2;
+    min-width: 0;
+}
+
+.about-adventure-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    object-fit: cover;
+    display: block;
+}
+
+.about-adventure-content {
+    flex: 0.8;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: var(--spacing-lg);
+}
+
+.about-adventure-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-md);
+}
+
+.about-adventure-text {
+    font-size: 16px;
+    color: var(--color-brown);
+    line-height: 1.8;
+    margin-bottom: var(--spacing-lg);
+}
+
+.about-adventure-content .btn {
+    align-self: flex-start;
+    margin-top: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+    .about-premium-wrapper {
+        flex-direction: column;
+    }
+
+    .about-premium-image {
+        flex: 1;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .about-feature-wrapper {
+        flex-direction: column;
+    }
+
+    .about-feature-wrapper.reverse {
+        flex-direction: column;
+    }
+
+    .about-feature-image {
+        flex: 1;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .about-hero-title {
+        font-size: 32px;
+    }
+
+    .about-quote {
+        font-size: 20px;
+    }
+
+    .about-video-wrapper {
+        aspect-ratio: 16 / 9;
+    }
+
+    .about-adventure-wrapper {
+        flex-direction: column;
+    }
+
+    .about-adventure-image {
+        flex: 1;
+        width: 100%;
+    }
+
+    .about-adventure-content {
+        padding-left: 0;
+        padding-top: var(--spacing-lg);
+    }
+}

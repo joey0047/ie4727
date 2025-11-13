@@ -47,12 +47,12 @@ $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
         </div>
         </div>  
 
-      <a href="<?= $BASE ?>/about.php" class="nav-link">About Us</a>
+      <a href="<?= $BASE ?><?= $BASE ?>/aboutus.php" class="nav-link">About Us</a>
       <a href="<?= $BASE ?>/contact.php" class="nav-link">Contact Us</a>
     </nav>
 
     <div class="logo">
-      <a href="<?= $BASE ?>/homepage.php" style="text-decoration:none; color:#16B1B9;"><h1 style="margin:0;">SHOPNAME</h1></a>
+      <a href="<?= $BASE ?><?= $BASE ?>/homepage.php" style="text-decoration:none; color:#16B1B9;"><h1 style="margin:0;">SHOPNAME</h1></a>
     </div>
 
     <div class="header-icons" style="display:flex;gap:14px;align-items:center;">
