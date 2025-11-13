@@ -1,0 +1,77 @@
+<?php
+// Define DIR constant for includes
+define('DIR', __DIR__);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In - Daey</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body>
+    <!-- Header -->
+    <?php include DIR . '/partials/header.php'; ?>
+
+    <!-- Login Section -->
+    <section class="login-section">
+        <div class="login-container">
+            <h1 class="login-title">Log In</h1>
+            <p class="login-description">Welcome back to Daey. Please enter your details.</p>
+            
+            <form class="login-form" action="login.php" method="POST">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="Email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Password" required>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-teal btn-login">Log In</button>
+            </form>
+            
+            <p class="create-account-text">
+                Don't have an account? <a href="signUp.html" class="create-account-link">Create an account</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="footer-left">
+                <h2 class="footer-logo">Daey</h2>
+                <p class="footer-tagline">Climbing Apparel Store</p>
+            </div>
+            <nav class="footer-nav">
+                <a href="homepage.html" class="footer-link">Home</a>
+                <a href="productlist.html" class="footer-link">Shop</a>
+                <a href="aboutus.php" class="footer-link">About Us</a>
+                <a href="#" class="footer-link">Contact Us</a>
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <p class="copyright">Copyright © 2025 Daey. All rights reserved</p>
+            <div class="footer-links">
+                <a href="#" class="footer-link-small">Privacy Policy</a>
+                <a href="#" class="footer-link-small">Terms of Use</a>
+            </div>
+            <div class="social-icons">
+                <span class="social-icon">📷</span>
+                <span class="social-icon">📘</span>
+                <span class="social-icon">🐦</span>
+                <span class="social-icon">▶</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+

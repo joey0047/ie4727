@@ -2169,3 +2169,417 @@ a {
         padding: var(--spacing-sm) var(--spacing-md);
     }
 }
+
+/* ============================================
+   CHECKOUT PAGE (checkOut.php)
+   ============================================ */
+.checkout-section {
+    padding: var(--spacing-section) var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.checkout-container {
+    display: flex;
+    gap: var(--spacing-xxl);
+    align-items: flex-start;
+}
+
+.checkout-form-column {
+    flex: 1.2;
+    position: relative;
+}
+
+.checkout-form-column::after {
+    content: '';
+    position: absolute;
+    right: calc(-1 * var(--spacing-xxl) / 2);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: rgba(43, 17, 7, 0.1);
+}
+
+.checkout-summary-column {
+    flex: 0.8;
+}
+
+.checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.checkout-section-block {
+    background-color: var(--color-white);
+    padding: var(--spacing-xl);
+    border-radius: 5px;
+    border-bottom: 1px solid rgba(43, 17, 7, 0.1);
+    margin-bottom: var(--spacing-xl);
+}
+
+.checkout-section-block:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.checkout-payment-section {
+    background-color: #f5f5f5;
+}
+
+.checkout-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.checkout-section-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+    margin: 0;
+    margin-bottom: var(--spacing-lg);
+}
+
+.checkout-sign-in-link {
+    font-size: 14px;
+    color: var(--color-brown);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.checkout-sign-in-link:hover {
+    color: var(--color-teal);
+}
+
+.checkout-account-text {
+    font-size: 14px;
+    color: var(--color-brown);
+    margin-top: var(--spacing-sm);
+    margin-bottom: 0;
+}
+
+.shipping-option {
+    margin-top: var(--spacing-md);
+}
+
+.shipping-option-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border: 1px solid rgba(43, 17, 7, 0.3);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.shipping-option-label:hover {
+    border-color: var(--color-teal);
+}
+
+.shipping-radio {
+    margin-right: var(--spacing-md);
+}
+
+.shipping-option-text {
+    flex: 1;
+    font-size: 16px;
+    color: var(--color-dark-brown);
+}
+
+.shipping-option-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+}
+
+.btn-pay-now {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: 18px;
+    margin-top: var(--spacing-xl);
+    border-radius: 10px;
+}
+
+.order-summary {
+    background-color: var(--color-white);
+    padding: var(--spacing-xl);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.order-summary-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-lg);
+    position: sticky;
+    top: 0;
+    background-color: var(--color-white);
+    z-index: 1;
+    padding-bottom: var(--spacing-md);
+}
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid rgba(43, 17, 7, 0.1);
+    min-height: 0;
+}
+
+.order-items:empty {
+    display: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.order-item {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.order-item-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.order-item-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.order-item-name {
+    font-size: 14px;
+    color: var(--color-dark-brown);
+    margin: 0;
+}
+
+.order-item-specs {
+    font-size: 12px;
+    color: var(--color-brown);
+    margin: 0;
+}
+
+.order-item-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+    margin: 0;
+    margin-top: auto;
+}
+
+.discount-section {
+    margin-bottom: var(--spacing-xl);
+    margin-top: 0;
+}
+
+.discount-input-wrapper {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.discount-input {
+    flex: 1;
+    padding: var(--spacing-md);
+    border: 1px solid rgba(43, 17, 7, 0.3);
+    border-radius: 5px;
+    font-size: 16px;
+    color: var(--color-dark-brown);
+    background-color: var(--color-white);
+}
+
+.discount-input::placeholder {
+    color: var(--color-brown);
+    opacity: 0.7;
+}
+
+.discount-input:focus {
+    outline: none;
+    border-color: var(--color-teal);
+}
+
+.btn-apply {
+    padding: var(--spacing-md) var(--spacing-lg);
+    white-space: nowrap;
+}
+
+.cost-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.cost-row {
+    display: flex;
+    justify-content: flex-start;
+    font-size: 16px;
+    color: var(--color-dark-brown);
+}
+
+.cost-label {
+    color: var(--color-brown);
+}
+
+.cost-value {
+    font-weight: 500;
+}
+
+.cost-row-total {
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(43, 17, 7, 0.1);
+    font-size: 18px;
+}
+
+.cost-row-total .cost-label {
+    font-weight: 600;
+    color: var(--color-dark-brown);
+}
+
+.cost-row-total .cost-value {
+    font-weight: 700;
+    color: var(--color-dark-brown);
+}
+
+@media (max-width: 968px) {
+    .checkout-container {
+        flex-direction: column;
+    }
+
+    .checkout-form-column::after {
+        display: none;
+    }
+
+    .order-summary {
+        position: static;
+    }
+}
+
+/* ============================================
+   RECEIPT PAGE (receipt.php)
+   ============================================ */
+.receipt-section {
+    padding: var(--spacing-section) var(--spacing-xl);
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.receipt-container {
+    background-color: var(--color-white);
+    padding: var(--spacing-xxl);
+    border-radius: 5px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.receipt-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+.receipt-text {
+    font-size: 16px;
+    color: var(--color-brown);
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.receipt-email {
+    font-size: 18px;
+    color: var(--color-dark-brown);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.receipt-subtitle {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-dark-brown);
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+}
+
+.receipt-section hr {
+    border: none;
+    border-top: 1px solid rgba(43, 17, 7, 0.1);
+    margin: var(--spacing-xl) 0;
+}
+
+.receipt-summary-box {
+    background-color: #f5f5f5;
+    padding: var(--spacing-lg);
+    border-radius: 5px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.receipt-summary-box p {
+    font-size: 16px;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+}
+
+.receipt-summary-box p:last-child {
+    margin-bottom: 0;
+}
+
+.receipt-total {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-dark-brown);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(43, 17, 7, 0.1);
+}
+
+.receipt-details-box {
+    background-color: var(--color-white);
+    padding: var(--spacing-lg);
+    border: 1px solid rgba(43, 17, 7, 0.1);
+    border-radius: 5px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.receipt-details-box p {
+    font-size: 16px;
+    color: var(--color-dark-brown);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+}
+
+.receipt-details-box p:last-child {
+    margin-bottom: 0;
+}
+
+.receipt-details-box strong {
+    color: var(--color-dark-brown);
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .receipt-container {
+        padding: var(--spacing-xl);
+    }
+
+    .receipt-title {
+        font-size: 24px;
+    }
+
+    .receipt-subtitle {
+        font-size: 20px;
+    }
+}
