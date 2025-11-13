@@ -35,7 +35,7 @@ if ($result->num_rows === 1) {
         $_SESSION['first_name'] = $user['first_name'];
 
         // Redirect to homepage (or dashboard)
-        header("Location: homepage.html");
+        header("Location: homepage.php");
         exit();
     } else {
         echo "<script>alert('❌ Incorrect password.'); window.history.back();</script>";

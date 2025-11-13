@@ -1,6 +1,10 @@
 <?php
+session_start();
 require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/config.php';
+
+// Check if user is logged in
+$isLoggedIn = isset($_SESSION['user_id']);
 
 /* ----------------- Newsletter form handler ----------------- */
 $newsletterMessage = '';
@@ -558,7 +562,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
             $final = max($orig - $disc, 0);
           ?>
           <article class="product-card">
-            <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$p['product_id'] ?>">
+            <a href="<?= $isLoggedIn ? BASE_URL . '/product.php?id=' . (int)$p['product_id'] : BASE_URL . '/logInPage.php' ?>">
               <div class="product-card-image">
                 <img src="<?= htmlspecialchars($p['image_url'] ?: (BASE_URL . '/assets/images/tempimage.png')) ?>"
                      alt="<?= htmlspecialchars($p['product_name']) ?>">
@@ -567,6 +571,8 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
             <div class="product-card-name">
               <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$p['product_id'] ?>">
                 <body><?= htmlspecialchars($p['product_name']) ?></body>
+              <a href="<?= $isLoggedIn ? BASE_URL . '/product.php?id=' . (int)$p['product_id'] : BASE_URL . '/logInPage.php' ?>">
+                <?= htmlspecialchars($p['product_name']) ?>
               </a>
             </div>
             <div class="product-card-price">
@@ -588,8 +594,11 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
         <div class="about-image"></div>
         <div>
           <div class="about-copy-highlight"><body>About SHOPNAME</body></div>
+          <div class="about-copy-highlight">About Daey</div>
           <h3 class="about-copy-title">Climbing-first apparel with everyday comfort.</h3>
           <p><body class="about-copy-body">
+            We started Daey after too many sessions spent in gear that felt
+          <p class="about-copy-body">
             We started Daey after too many sessions spent in gear that felt
             like a compromise—heavy at the gym and out of place everywhere else.
             Today, every piece we make is built around three principles:
@@ -665,9 +674,14 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       </div>
     </section>
 
-    <!-- Newsletter -->
+    <!-- (Testimonials section skipped as requested) -->
+
+  </main>
+
+  <!-- Newsletter -->
   <section class="newsletter-section">
-    <div class="newsletter-overlay">
+    <div class="newsletter-overlay"></div>
+    <div class="newsletter-content">
       <h2 class="newsletter-title">Join Our Newsletter</h2>
       <p class="newsletter-subtitles">
         Sign up for deals, new products and promotions.
@@ -690,13 +704,9 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     </div>
   </section>
 
-    <!-- (Testimonials section skipped as requested) -->
+<?php include __DIR__ . '/partials/footer.php'; ?>
 
+<?php include __DIR__ . '/cart.php'; ?>
 
-    <!-- Simple Footer -->
-    <footer class="footer">
-      © <?= date('Y') ?> SHOPNAME. All rights reserved.
-    </footer>
-  </main>
 </body>
 </html>

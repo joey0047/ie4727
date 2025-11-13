@@ -28,13 +28,12 @@ $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
   <div class="header-top">
     <nav class="nav-left">
       <!-- Shop (click to open; stays open until click-away or Esc) -->
-        <div class="nav-item nav-shop" id="navShop" style="position:relative;display:flex;align-items:center;gap:6px;">
+        <div class="nav-item nav-shop" id="navShop">
         <!-- Clicking 'Shop' goes to ALL products (no filter) -->
         <a href="<?= $BASE ?>/productlist.php" class="nav-link" style="text-decoration:none;color:inherit;"><body>Shop</body></a>
 
         <!-- Caret toggles dropdown -->
-        <button class="shop-toggle" id="shopToggle" aria-haspopup="true" aria-expanded="false" aria-controls="shopMenu"
-                style="background:none;border:0;cursor:pointer;padding:0;line-height:1;">
+        <button class="shop-toggle" id="shopToggle" aria-haspopup="true" aria-expanded="false" aria-controls="shopMenu">
             <span class="dropdown-arrow">▼</span>
         </button>
 
@@ -56,13 +55,11 @@ $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
       <a href="<?= $BASE ?>/homepage.php" style="text-decoration:none; color:#16B1B9;"><h1 style="margin:0;">Daey</h1></a>
     </div>
 
-    <div class="header-icons" style="display:flex;gap:14px;align-items:center;">
+    <div class="header-icons">
       <a href="<?= $BASE ?>/profileMain.php" aria-label="Account" >
-        <img src="assets\icon\user.png" alt="User" style="width:20px;height:20px;">
+        <img src="assets\icon\user.png" alt="User">
       </a>
-      <a href="<?= $BASE ?>/cart.php" aria-label="Cart">
-        <img src="assets\icon\shopping-bag.png" alt="Cart" style="width:20px;height:20px;">
-      </a>
+      <img src="assets\icon\shopping-bag.png" id="cartIcon" class="icon" alt="Cart">
     </div>
   </div>
 </header>
@@ -81,4 +78,16 @@ $BASE = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
   document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeMenu(); });
   menu.addEventListener('click', (e)=>{ const a=e.target.closest('a'); if (a) closeMenu(); });
 })();
+
+// Cart icon click handler
+document.addEventListener('DOMContentLoaded', function() {
+  const cartIcon = document.getElementById('cartIcon');
+  if (cartIcon) {
+    cartIcon.addEventListener('click', function() {
+      if (typeof window.openCart === 'function') {
+        window.openCart();
+      }
+    });
+  }
+});
 </script>

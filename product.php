@@ -49,16 +49,30 @@ $sizes  = [];         // unique sizes
 $variantsMap = [];    // [color][size] => variant
 
 foreach ($variants as $v) {
-    $color = strtoupper($v['color_hex']);
-    $size  = strtoupper($v['size']);
+    $color = !empty($v['color_hex']) ? strtoupper(trim($v['color_hex'])) : '';
+    $size  = !empty($v['size']) ? strtoupper(trim($v['size'])) : '';
 
-    if (!in_array($color, $colors, true)) {
+    // Only add color if it's not empty and not already in the list
+    if ($color && $color !== '' && !in_array($color, $colors, true)) {
         $colors[] = $color;
     }
-    if (!in_array($size, $sizes, true)) {
+    // Only add size if it's not empty and not already in the list
+    if ($size && $size !== '' && !in_array($size, $sizes, true)) {
         $sizes[] = $size;
     }
-    $variantsMap[$color][$size] = $v;
+    // Build variant map - handle cases where color or size might be empty
+    if ($color && $size) {
+        $variantsMap[$color][$size] = $v;
+    } elseif ($size) {
+        // Product with size but no color (like socks)
+        $variantsMap[''][$size] = $v;
+    } elseif ($color) {
+        // Product with color but no size (unlikely but handle it)
+        $variantsMap[$color][''] = $v;
+    } else {
+        // Product with neither color nor size (single variant product)
+        $variantsMap[''][''] = $v;
+    }
 }
 
 /* Sort sizes in XS → S → M → L → XL → 2XL order */
@@ -183,8 +197,8 @@ $variantsJs = [];
 foreach ($variants as $v) {
     $variantsJs[] = [
         'variant_id' => (int)$v['variant_id'],
-        'color'      => strtoupper($v['color_hex']),
-        'size'       => strtoupper($v['size']),
+        'color'      => !empty($v['color_hex']) ? strtoupper(trim($v['color_hex'])) : '',
+        'size'       => !empty($v['size']) ? strtoupper(trim($v['size'])) : '',
         'stock_qty'  => (int)$v['stock_qty'],
     ];
 }
@@ -196,280 +210,6 @@ foreach ($variants as $v) {
   <title><?= htmlspecialchars($product['product_name']) ?> | SHOPNAME</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="<?= BASE_URL ?>/stylesheet.css">
-  <style>
-    /* Layout */
-    .product-page {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 32px 20px 60px;
-      font-family: "Lexend Deca", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    .product-main {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      align-items: flex-start;
-    }
-    @media (max-width: 900px) {
-      .product-main { grid-template-columns: 1fr; }
-    }
-
-    /* Images */
-    .product-images {
-      display: grid;
-      grid-template-columns: 80px 1fr;
-      gap: 16px;
-    }
-    @media (max-width: 600px) {
-      .product-images { grid-template-columns: 1fr; }
-    }
-    .product-thumbs {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .product-thumb {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      border: 1px solid #e1e1e1;
-      cursor: pointer;
-      opacity: 0.7;
-      transition: border-color .2s ease, opacity .2s ease;
-    }
-    .product-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform .3s ease;
-    }
-    .product-thumb.active,
-    .product-thumb:hover {
-      border-color: #16B1B9;
-      opacity: 1;
-    }
-
-    .product-main-image-wrapper {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border: 1px solid #e1e1e1;
-      overflow: hidden;
-    }
-    .product-main-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform .35s ease;
-    }
-
-
-    /* Info */
-    .product-info h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-    .product-price {
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-    .product-price .orig {
-      text-decoration: line-through;
-      opacity: .5;
-      margin-right: 8px;
-    }
-    .product-price .final {
-      font-weight: 600;
-    }
-
-    /* Color swatches */
-    .product-option-label {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: 6px;
-    }
-    .color-swatches {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .color-swatch {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      position: relative;
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
-    }
-    .color-swatch.selected {
-      box-shadow: 0 0 0 2px #16B1B9;
-      border-color: #16B1B9;
-    }
-
-    /* Size buttons */
-    .size-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .size-option {
-      min-width: 40px;
-      padding: 6px 12px;
-      font-size: 13px;
-      border-radius: 999px;
-      border: 1px solid #ccc;
-      background: #fff;
-      cursor: pointer;
-      transition: background .2s ease, border-color .2s ease, color .2s ease, opacity .2s ease;
-    }
-    .size-option.selected {
-      background: #16B1B9;
-      border-color: #16B1B9;
-      color: #fff;
-    }
-    .size-option.disabled {
-      opacity: .4;
-      cursor: not-allowed;
-    }
-
-    .size-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      margin-top: 4px;
-    }
-    .size-guide-link {
-      font-size: 13px;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    /* Quantity + Add to Cart */
-    .add-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin: 18px 0 20px;
-    }
-    .qty-control {
-      display: inline-flex;
-      align-items: center;
-      border: 1px solid #ccc;
-      border-radius: 999px;
-      overflow: hidden;
-    }
-    .qty-btn {
-      width: 30px;
-      height: 32px;
-      border: none;
-      background: #f6f6f6;
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
-    }
-    .qty-input {
-      width: 40px;
-      text-align: center;
-      border: none;
-      outline: none;
-      font-size: 14px;
-    }
-    .add-to-cart-btn {
-      flex: 1;
-      background: #16B1B9;
-      border: none;
-      color: white;
-      font-size: 16px;
-      font-weight: 600;
-      padding: 10px 18px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background .2s ease, transform .05s ease;
-    }
-    .add-to-cart-btn:hover {
-      background: #1298a0;
-    }
-    .add-to-cart-btn:active {
-      transform: translateY(1px);
-    }
-    .add-to-cart-btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    .stock-message {
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-    .stock-message.out {
-      color: #c0392b;
-    }
-    .stock-message.in {
-      color: #27ae60;
-    }
-
-    /* Description / Care */
-    .product-description {
-      margin-top: 10px;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    /* You might also like */
-    .you-might-like {
-      margin-top: 60px;
-    }
-    .you-might-like h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-    .you-might-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 24px;
-    }
-    @media (max-width: 900px) {
-      .you-might-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    }
-    @media (max-width: 600px) {
-      .you-might-grid { grid-template-columns: 1fr; }
-    }
-    .you-might-item {
-      border: 1px solid #eee;
-      padding: 10px;
-    }
-    .you-might-image-wrapper {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      background: #f8f8f8;
-    }
-    .you-might-image-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform .35s ease;
-    }
-    .you-might-item:hover img {
-      transform: scale(1.05);
-    }
-    .you-might-name {
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    .you-might-price {
-      font-size: 13px;
-      margin-top: 4px;
-    }
-    .you-might-price .orig {
-      text-decoration: line-through;
-      opacity: .5;
-      margin-right: 4px;
-    }
-  </style>
 </head>
 <body>
   <?php include __DIR__ . '/partials/header.php'; ?>
@@ -509,6 +249,11 @@ foreach ($variants as $v) {
       <div class="product-info">
         <h1><?= htmlspecialchars($product['product_name']) ?></h1>
 
+        <?php 
+          // Check if chalk bag (category_id = 5) - define once for use throughout
+          $isChalkBag = isset($product['category_id']) && (int)$product['category_id'] === 5;
+        ?>
+
         <div class="product-price">
           <?php if ($hasDisc): ?>
             <span class="orig"><?= price_fmt($orig) ?></span>
@@ -518,29 +263,30 @@ foreach ($variants as $v) {
           <?php endif; ?>
         </div>
 
-        <!-- Color -->
-        <?php if (!empty($colors)): ?>
+        <!-- Color (only show if multiple colors) -->
+        <?php if (count($colors) > 1): ?>
           <div class="product-option">
             <div class="product-option-label">Color</div>
             <div class="color-swatches" id="colorSwatches">
               <?php foreach ($colors as $colorHex): ?>
                 <?php
-                  $isSelected = ($defaultVariant && strtoupper($defaultVariant['color_hex']) === $colorHex);
+                  $isSelected = ($defaultVariant && strtoupper($defaultVariant['color_hex'] ?? '') === $colorHex);
                 ?>
                 <button
                   type="button"
                   class="color-swatch <?= $isSelected ? 'selected' : '' ?>"
                   data-color="<?= htmlspecialchars($colorHex) ?>"
-                  style="background-color: <?= htmlspecialchars($colorHex) ?>;"
+                  data-bg-color="<?= htmlspecialchars($colorHex) ?>"
                   aria-label="Color <?= htmlspecialchars($colorHex) ?>"
+                  style="background-color: <?= htmlspecialchars($colorHex) ?>;"
                 ></button>
               <?php endforeach; ?>
             </div>
           </div>
         <?php endif; ?>
 
-        <!-- Size -->
-        <?php if (!empty($sizes)): ?>
+        <!-- Size (only show if multiple sizes) -->
+        <?php if (count($sizes) > 1): ?>
           <div class="product-option">
             <div class="size-row">
               <div class="product-option-label">Size</div>
@@ -549,7 +295,7 @@ foreach ($variants as $v) {
             <div class="size-options" id="sizeOptions">
               <?php foreach ($sizes as $sz): ?>
                 <?php
-                  $isSelected = ($defaultVariant && strtoupper($defaultVariant['size']) === $sz);
+                  $isSelected = ($defaultVariant && strtoupper($defaultVariant['size'] ?? '') === $sz);
                 ?>
                 <button
                   type="button"
@@ -585,8 +331,19 @@ foreach ($variants as $v) {
             class="add-to-cart-btn"
             type="button"
             id="addToCartBtn"
+            <?php 
+              // Check if out of stock
+              $isOutOfStock = $defaultVariant && (int)$defaultVariant['stock_qty'] <= 0;
+              if ($isChalkBag && $isOutOfStock): 
+            ?>
+              disabled
+            <?php endif; ?>
           >
-            Add To Cart
+            <?php if ($isChalkBag && $isOutOfStock): ?>
+              Sold Out
+            <?php else: ?>
+              Add To Cart
+            <?php endif; ?>
           </button>
         </div>
 
@@ -596,6 +353,26 @@ foreach ($variants as $v) {
 
         <!-- Hidden input to hold selected variant_id for later cart logic -->
         <input type="hidden" id="selectedVariantId" value="<?= $defaultVariant ? (int)$defaultVariant['variant_id'] : 0 ?>">
+        
+        <?php 
+          // Only show error if no variants AND not a chalk bag
+          if (empty($variants) && !$isChalkBag): 
+        ?>
+          <div class="product-error">
+            <strong>Product Configuration Error:</strong> This product does not have any variants configured.
+          </div>
+          <script>
+            // Disable add to cart button if no variants
+            document.addEventListener('DOMContentLoaded', () => {
+              const addBtn = document.getElementById('addToCartBtn');
+              if (addBtn) {
+                addBtn.disabled = true;
+                addBtn.style.opacity = '0.5';
+                addBtn.style.cursor = 'not-allowed';
+              }
+            });
+          </script>
+        <?php endif; ?>
       </div>
     </section>
 
@@ -638,28 +415,77 @@ foreach ($variants as $v) {
 <script>
   // Variant data from PHP
   const VARIANTS = <?= json_encode($variantsJs, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT) ?>;
-  let selectedColor = <?= $defaultVariant ? json_encode(strtoupper($defaultVariant['color_hex'])) : 'null' ?>;
-  let selectedSize  = <?= $defaultVariant ? json_encode(strtoupper($defaultVariant['size']))      : 'null' ?>;
+  let selectedColor = <?= $defaultVariant ? json_encode(strtoupper($defaultVariant['color_hex'] ?? '')) : 'null' ?>;
+  let selectedSize  = <?= $defaultVariant ? json_encode(strtoupper($defaultVariant['size'] ?? ''))      : 'null' ?>;
 
   function findVariant(color, size) {
-    if (!color || !size) return null;
-    return VARIANTS.find(v => v.color === color && v.size === size) || null;
+    // If no color/size needed (single variant product), return first variant
+    if (VARIANTS.length === 1) {
+      return VARIANTS[0];
+    }
+    
+    // If all variants have the same color (or no color), use that color
+    const uniqueColors = [...new Set(VARIANTS.map(v => v.color || ''))];
+    if (uniqueColors.length === 1) {
+      color = uniqueColors[0] || '';
+    }
+    
+    // If all variants have the same size (or no size), use that size
+    const uniqueSizes = [...new Set(VARIANTS.map(v => v.size || ''))];
+    if (uniqueSizes.length === 1) {
+      size = uniqueSizes[0] || '';
+    }
+    
+    // Find variant matching color and size (empty strings match empty/null values)
+    return VARIANTS.find(v => {
+      const vColor = (v.color || '').toUpperCase();
+      const vSize = (v.size || '').toUpperCase();
+      const matchColor = (!color && !vColor) || (color && vColor && color.toUpperCase() === vColor);
+      const matchSize = (!size && !vSize) || (size && vSize && size.toUpperCase() === vSize);
+      return matchColor && matchSize;
+    }) || null;
   }
 
   function updateStockMessage(variant) {
     const el = document.getElementById('stockMessage');
+    const addBtn = document.getElementById('addToCartBtn');
+    const isChalkBag = <?= isset($product['category_id']) && (int)$product['category_id'] === 5 ? 'true' : 'false' ?>;
+    
     if (!el) return;
     if (!variant) {
-      el.textContent = 'Please select color and size.';
+      // Check if color/size selection is needed
+      const uniqueColors = [...new Set(VARIANTS.map(v => v.color || ''))];
+      const uniqueSizes = [...new Set(VARIANTS.map(v => v.size || ''))];
+      if (uniqueColors.length > 1 || uniqueSizes.length > 1) {
+        el.textContent = 'Please select color and size.';
+      } else {
+        el.textContent = 'Product not available.';
+      }
       el.className = 'stock-message';
       return;
     }
     if (variant.stock_qty > 0) {
       el.textContent = `In stock (${variant.stock_qty} available)`;
       el.className = 'stock-message in';
+      if (addBtn) {
+        addBtn.disabled = false;
+        addBtn.textContent = 'Add To Cart';
+        addBtn.style.opacity = '1';
+        addBtn.style.cursor = 'pointer';
+      }
     } else {
       el.textContent = 'Out of stock';
       el.className = 'stock-message out';
+      if (addBtn && isChalkBag) {
+        addBtn.disabled = true;
+        addBtn.textContent = 'Sold Out';
+        addBtn.style.opacity = '0.5';
+        addBtn.style.cursor = 'not-allowed';
+      } else if (addBtn) {
+        addBtn.disabled = true;
+        addBtn.style.opacity = '0.5';
+        addBtn.style.cursor = 'not-allowed';
+      }
     }
   }
 
@@ -720,6 +546,38 @@ function updateImagesForColor(colorHex) {
     const qtyInput    = document.getElementById('qtyInput');
     const qtyMinus    = document.getElementById('qtyMinus');
     const qtyPlus     = document.getElementById('qtyPlus');
+
+    // Auto-select variant if there's only one option (no color/size selection needed)
+    if (VARIANTS.length > 0) {
+      const uniqueColors = [...new Set(VARIANTS.map(v => v.color || ''))];
+      const uniqueSizes = [...new Set(VARIANTS.map(v => v.size || ''))];
+      
+      // If only one color and one size (or no color/size), auto-select the variant
+      if ((uniqueColors.length <= 1 && uniqueSizes.length <= 1) || VARIANTS.length === 1) {
+        const autoVariant = findVariant(selectedColor || '', selectedSize || '');
+        if (autoVariant && variantInput) {
+          variantInput.value = autoVariant.variant_id;
+          selectedColor = autoVariant.color || '';
+          selectedSize = autoVariant.size || '';
+          updateStockMessage(autoVariant);
+        }
+      }
+    }
+    
+    // Initial check: disable button for chalk bags if out of stock on page load
+    const isChalkBag = <?= $isChalkBag ? 'true' : 'false' ?>;
+    if (isChalkBag && addBtn && variantInput) {
+      const initialVariantId = parseInt(variantInput.value || '0', 10);
+      if (initialVariantId > 0) {
+        const initialVariant = VARIANTS.find(v => v.variant_id === initialVariantId);
+        if (initialVariant && initialVariant.stock_qty <= 0) {
+          addBtn.disabled = true;
+          addBtn.textContent = 'Sold Out';
+          addBtn.style.opacity = '0.5';
+          addBtn.style.cursor = 'not-allowed';
+        }
+      }
+    }
 
     // Thumbnails: click to update main image
     document.querySelectorAll('.product-thumb').forEach(btn => {
@@ -810,16 +668,44 @@ function updateImagesForColor(colorHex) {
     // Add to Cart stub (will hook into cart drawer later)
     if (addBtn) {
       addBtn.addEventListener('click', () => {
-        const variantId = parseInt(variantInput.value || '0', 10);
-        if (!variantId) {
-          alert('Please select a color and size before adding to cart.');
+        // Prevent click if button is disabled (e.g., chalk bag sold out)
+        if (addBtn.disabled) {
           return;
         }
+        
+        let variantId = parseInt(variantInput.value || '0', 10);
+        
+        // If no variant selected but we have variants, use the default/first one
+        if (!variantId && VARIANTS.length > 0) {
+          variantId = VARIANTS[0].variant_id;
+          variantInput.value = variantId;
+        }
+        
+        if (!variantId || variantId <= 0) {
+          alert('This product is not available.');
+          return;
+        }
+        
+        // Verify the variant exists in our VARIANTS array
+        const selectedVariant = VARIANTS.find(v => v.variant_id === variantId);
+        if (!selectedVariant) {
+          console.error('Variant not found:', variantId, 'Available variants:', VARIANTS);
+          alert('Invalid product selection. Please refresh the page and try again.');
+          return;
+        }
+        
         const qty = parseInt(qtyInput.value || '1', 10);
         if (!qty || qty < 1) {
           alert('Please enter a valid quantity.');
           return;
         }
+        
+        if (selectedVariant.stock_qty < qty) {
+          alert(`Only ${selectedVariant.stock_qty} items available in stock.`);
+          return;
+        }
+
+        console.log('Adding to cart - Variant ID:', variantId, 'Quantity:', qty, 'Variant:', selectedVariant);
 
         const formData = new URLSearchParams();
         formData.append('variant_id', String(variantId));
@@ -834,19 +720,27 @@ function updateImagesForColor(colorHex) {
         })
         .then(res => res.json())
         .then(data => {
+          console.log('Add to cart response:', data);
           if (!data.ok) {
             alert(data.message || 'Unable to add to cart.');
             return;
           }
 
-          // Optionally update a cart count badge here using data.total_items
-
-          // Open the cart drawer
-          if (typeof window.openCartDrawer === 'function') {
-            window.openCartDrawer();
+          // Refresh cart drawer via AJAX and open it
+          if (typeof window.refreshCartDrawer === 'function') {
+            window.refreshCartDrawer().then(() => {
+              if (typeof window.openCart === 'function') {
+                window.openCart();
+              }
+            });
+          } else {
+            // Fallback: reload page and open cart
+            sessionStorage.setItem('openCartAfterReload', 'true');
+            window.location.reload();
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error('Add to cart error:', err);
           alert('Network error while adding to cart.');
         });
       });
@@ -857,6 +751,10 @@ function updateImagesForColor(colorHex) {
 
   });
 </script>
+
+<?php include __DIR__ . '/partials/footer.php'; ?>
+
+<?php include __DIR__ . '/cart.php'; ?>
 
 </body>
 </html>
