@@ -2,7 +2,9 @@
 define('DIR', __DIR__);
 session_start();
 
-// If logged in, fetch user details for autofill
+/* -----------------------------------------------------------
+   LOAD USER (IF LOGGED IN)
+----------------------------------------------------------- */
 $user = null;
 
 if (isset($_SESSION['user_id'])) {
@@ -19,6 +21,29 @@ if (isset($_SESSION['user_id'])) {
         $user = $result->fetch_assoc();
     }
 }
+
+/* -----------------------------------------------------------
+   LOAD CART
+   Cart example format:
+   $_SESSION['cart'] = [
+       ['name'=>'Shirt A','price'=>29.90,'qty'=>2],
+       ['name'=>'Shorts B','price'=>45.50,'qty'=>1]
+   ];
+----------------------------------------------------------- */
+// Load dummy cart from session (until real cart system is ready)
+$cart = $_SESSION['cart'] ?? [];
+
+$subtotal = 0;
+$total_items = 0;
+
+foreach ($cart as $item) {
+    $subtotal += $item['price'] * $item['qty'];
+    $total_items += $item['qty'];
+}
+
+$shipping = 5.00;
+$total = $subtotal + $shipping;
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,8 +51,6 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Daey</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="stylesheet.css">
 </head>
@@ -44,8 +67,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="checkout-form-column">
             <form class="checkout-form" action="receipt.php" method="POST">
 
-
-                <!-- CONTACT SECTION (ONLY FOR GUEST USERS) -->
+                <!-- CONTACT SECTION (ONLY FOR GUESTS) -->
                 <?php if (!$user): ?>
                 <div class="checkout-section-block">
                     <div class="checkout-section-header">
@@ -54,26 +76,26 @@ if (isset($_SESSION['user_id'])) {
                     </div>
 
                     <div class="form-group">
-                        <input type="email" id="email" name="email" class="form-input" placeholder="Email" required>
+                        <input type="email" id="email" name="email" class="form-input"
+                               placeholder="Email" required>
                     </div>
-
-                    <p class="checkout-account-text">Account: Guest checkout</p>
                 </div>
                 <?php else: ?>
-                    <!-- Logged-in user email (hidden input) -->
+                    <!-- Logged-in user's email -->
                     <input type="hidden" name="email" value="<?php echo htmlspecialchars($user['email']); ?>">
                 <?php endif; ?>
 
 
-                 <!-- DELIVERY SECTION -->
-                 <div class="checkout-section-block">
-                     <?php if ($user): ?>
-                         <p class="checkout-account-text" style="margin-bottom: 15px;">
-                             Logged in as: <strong><?php echo htmlspecialchars($user['email']); ?></strong>
-                         </p>
-                     <?php endif; ?>
- 
-                     <h2 class="checkout-section-title">Delivery</h2>
+                <!-- DELIVERY SECTION -->
+                <div class="checkout-section-block">
+
+                    <?php if ($user): ?>
+                        <p class="checkout-account-text" style="margin-bottom: 15px;">
+                            Logged in as: <strong><?php echo htmlspecialchars($user['email']); ?></strong>
+                        </p>
+                    <?php endif; ?>
+
+                    <h2 class="checkout-section-title">Delivery</h2>
 
                     <div class="form-group">
                         <input type="text" id="country" name="country" class="form-input"
@@ -118,21 +140,21 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
 
-                <!-- SHIPPING METHOD -->
+                <!-- SHIPPING -->
                 <div class="checkout-section-block">
                     <h2 class="checkout-section-title">Shipping method</h2>
 
                     <div class="shipping-option">
                         <label class="shipping-option-label">
-                            <input type="radio" name="shipping" value="standard" checked class="shipping-radio">
+                            <input type="radio" name="shippingMethod" value="standard" checked class="shipping-radio">
                             <span class="shipping-option-text">Standard</span>
-                            <span class="shipping-option-price">$5</span>
+                            <span class="shipping-option-price">$5.00</span>
                         </label>
                     </div>
                 </div>
 
 
-                <!-- PAYMENT SECTION -->
+                <!-- PAYMENT -->
                 <div class="checkout-section-block checkout-payment-section">
                     <h2 class="checkout-section-title">Payment</h2>
 
@@ -159,6 +181,11 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
 
+                <!-- PASS TOTALS TO RECEIPT -->
+                <input type="hidden" name="subtotal" value="<?php echo $subtotal; ?>">
+                <input type="hidden" name="shipping" value="<?php echo $shipping; ?>">
+                <input type="hidden" name="total" value="<?php echo $total; ?>">
+
                 <!-- PAY BUTTON -->
                 <button type="submit" class="btn btn-brown btn-pay-now">Pay Now</button>
 
@@ -166,33 +193,44 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
 
-        <!-- RIGHT COLUMN -->
+        <!-- RIGHT COLUMN (ORDER SUMMARY) -->
         <div class="checkout-summary-column">
             <div class="order-summary">
                 <h2 class="order-summary-title">Order Summary</h2>
-                
-                <div class="order-items" id="orderItems">
-                    <!-- Items added dynamically later -->
-                </div>
 
-                <div class="discount-section">
-                    <div class="discount-input-wrapper">
-                        <input type="text" id="discountCode" name="discountCode" class="discount-input" placeholder="Enter Discount Code">
-                        <button type="button" class="btn btn-brown btn-apply">Apply</button>
-                    </div>
-                </div>
+                <div class="order-items">
+    <?php if (empty($cart)): ?>
+        <p>No items in cart.</p>
+    <?php else: ?>
+        <?php foreach ($cart as $item): ?>
+            <div class="order-item-row">
+                <p><strong><?php echo htmlspecialchars($item['name']); ?></strong></p>
+                <p>Qty: <?php echo $item['qty']; ?></p>
+                <p>$<?php echo number_format($item['price'] * $item['qty'], 2); ?></p>
+            </div>
+            <hr>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+
 
                 <div class="cost-summary">
                     <div class="cost-row">
-                        <span class="cost-label">Subtotal - x items</span>
+                        <span class="cost-label">Subtotal (<?php echo $total_items; ?> items)</span>
+                        <span>$<?php echo number_format($subtotal, 2); ?></span>
                     </div>
+
                     <div class="cost-row">
                         <span class="cost-label">Shipping</span>
+                        <span>$<?php echo number_format($shipping, 2); ?></span>
                     </div>
+
                     <div class="cost-row cost-row-total">
                         <span class="cost-label">Total</span>
+                        <span>$<?php echo number_format($total, 2); ?></span>
                     </div>
                 </div>
+
             </div>
         </div>
 
