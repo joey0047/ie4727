@@ -69,14 +69,15 @@ if ($userId) {
                     <div class="cart-item" data-item-id="<?= (int)$item['cart_item_id'] ?>">
                         <img src="<?= htmlspecialchars($item['img'] ?: (BASE_URL . '/assets/images/tempimage.png')) ?>" class="cart-img" alt="<?= htmlspecialchars($item['product_name']) ?>">
                         <div class="cart-info">
-                            <strong><?= htmlspecialchars($item['product_name']) ?></strong><br>
+                            <strong><?= htmlspecialchars($item['product_name']) ?></strong>
                             <?php if (!empty($item['size'])): ?>
                                 Size: <?= htmlspecialchars(strtoupper($item['size'])) ?> |
                             <?php endif; ?>
                             <?php if (!empty($item['color_hex'])): ?>
-                                Color: <?= htmlspecialchars(strtoupper($item['color_hex'])) ?><br>
+                                Color: <?= htmlspecialchars(strtoupper($item['color_hex'])) ?>
                             <?php endif; ?>
-                            <div class="cart-item-controls">
+                            <div class="cart-item-controls" style="display:flex;width:100%;">
+                                <div class="cart-item-price">$<?= number_format($item['line'], 2) ?></div>
                                 <div class="cart-qty-control">
                                     <button class="cart-qty-btn" data-action="minus" data-item-id="<?= (int)$item['cart_item_id'] ?>">−</button>
                                     <span class="cart-qty-value"><?= (int)$item['quantity'] ?></span>
@@ -84,7 +85,6 @@ if ($userId) {
                                 </div>
                                 <button class="cart-item-remove" data-item-id="<?= (int)$item['cart_item_id'] ?>" title="Remove">×</button>
                             </div>
-                            <div class="cart-item-price">$<?= number_format($item['line'], 2) ?></div>
                         </div>
                     </div>
                 <?php endforeach; ?>

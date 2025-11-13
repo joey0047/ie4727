@@ -178,6 +178,9 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       inset: 0;
       background: linear-gradient(to right, rgba(0,0,0,.55), rgba(0,0,0,.15));
     }
+    .section-hm-arrival{
+      padding: 80px 72px 40px 72px;
+    }
     .hero-contents {
       position: relative;
       z-index: 1;
@@ -346,7 +349,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     .about-btn:hover { background:#1298a0; }
 
 /* Shop Collection */
-.shop-collection-section {
+.shop-collection-section-hm {
   color: #1a0c06;
   padding-top: 40px;
   padding-bottom: 60px;
@@ -549,7 +552,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     </section>
 
     <!-- New Arrival / Best Seller / Sale -->
-    <section class="section">
+    <section class="section-hm-arrival">
       <div class="section-header">
         <h2 class="section-title">New Arrival</h2>
       </div>
@@ -593,7 +596,6 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       <div class="about-section-inner">
         <div class="about-image"></div>
         <div>
-          <div class="about-copy-highlight"><body>About SHOPNAME</body></div>
           <div class="about-copy-highlight">About Daey</div>
           <h3 class="about-copy-title">Climbing-first apparel with everyday comfort.</h3>
           <p><body class="about-copy-body">
@@ -610,7 +612,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     </section>
 
     <!-- Shop Collection -->
-    <section class="section shop-collection-section">
+    <section class="section shop-collection-section-hm">
       <div class="shop-collection-grid">
         <!-- Tops (large card spanning two rows) -->
         <article class="shop-collection-card shop-collection-card--large">
