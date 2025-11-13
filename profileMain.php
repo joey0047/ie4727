@@ -6,7 +6,7 @@ define('DIR', __DIR__);
 
 // Prevent access if not logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: logIn.html");
+    header("Location: logInPage.php");
     exit();
 }
 
@@ -21,7 +21,6 @@ $stmt = $conn->prepare("
     FROM users 
     WHERE user_id = ?
 ");
-
 
 $stmt->bind_param("i", $userId);
 $stmt->execute();
@@ -152,21 +151,9 @@ $conn->close();
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-top">
-            <div class="footer-left">
-                <h2 class="footer-logo">Daey</h2>
-                <p class="footer-tagline">Climbing Apparel Store</p>
-            </div>
-            <nav class="footer-nav">
-                <a href="homepage.html" class="footer-link">Home</a>
-                <a href="productlist.html" class="footer-link">Shop</a>
-                <a href="#" class="footer-link">About Us</a>
-                <a href="#" class="footer-link">Contact Us</a>
-            </nav>
-        </div>
-    </footer>
+    <?php include DIR . '/partials/footer.php'; ?>
+
+<?php include DIR . '/cart.php'; ?>
 
 </body>
 </html>

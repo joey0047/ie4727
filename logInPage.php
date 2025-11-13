@@ -44,34 +44,10 @@ define('DIR', __DIR__);
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-top">
-            <div class="footer-left">
-                <h2 class="footer-logo">Daey</h2>
-                <p class="footer-tagline">Climbing Apparel Store</p>
-            </div>
-            <nav class="footer-nav">
-                <a href="homepage.html" class="footer-link">Home</a>
-                <a href="productlist.html" class="footer-link">Shop</a>
-                <a href="aboutus.php" class="footer-link">About Us</a>
-                <a href="#" class="footer-link">Contact Us</a>
-            </nav>
-        </div>
-        <div class="footer-bottom">
-            <p class="copyright">Copyright © 2025 Daey. All rights reserved</p>
-            <div class="footer-links">
-                <a href="#" class="footer-link-small">Privacy Policy</a>
-                <a href="#" class="footer-link-small">Terms of Use</a>
-            </div>
-            <div class="social-icons">
-                <span class="social-icon">📷</span>
-                <span class="social-icon">📘</span>
-                <span class="social-icon">🐦</span>
-                <span class="social-icon">▶</span>
-            </div>
-        </div>
-    </footer>
+    <?php include DIR . '/partials/footer.php'; ?>
+
+<?php include DIR . '/cart.php'; ?>
+
 </body>
 </html>
 

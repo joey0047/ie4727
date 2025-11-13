@@ -25,7 +25,7 @@ $check->bind_param("s", $email);
 $check->execute();
 $result = $check->get_result();
 if ($result->num_rows > 0) {
-    echo "<script>alert('Email already registered! Please log in.'); window.location.href='logIn.html';</script>";
+    echo "<script>alert('Email already registered! Please log in.'); window.location.href='logInPage.php';</script>";
     exit();
 }
 
@@ -43,7 +43,7 @@ if ($stmt->execute()) {
     $_SESSION['first_name'] = $firstName;
 
     echo "<script>alert('Account created successfully! Welcome to Daey.'); 
-    window.location.href='homepage.html';</script>";
+    window.location.href='homepage.php';</script>";
     exit();
 } else {
     echo "<script>alert('Error creating account.'); window.history.back();</script>";

@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Redirect to login if user is not signed in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: logInPage.php");
+    exit();
+}
+
 require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/config.php';
 
@@ -123,7 +131,8 @@ $totalPages = max(1, (int)ceil($total / $perPage));
 
 $listSql = "
   SELECT 
-    p.product_id, p.product_name, p.description, p.base_price, p.discount_flat,
+    p.product_id, p.product_name, p.description, p.base_price, p.discount_flat, p.category_id,
+    (SELECT MAX(v.stock_qty) FROM variants v WHERE v.product_id = p.product_id) AS max_stock_qty,
     COALESCE(
       (SELECT image_url FROM product_images pi 
        WHERE pi.product_id = p.product_id AND pi.is_primary = 1 
@@ -192,22 +201,6 @@ $title = title_from_filters($catIds);
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title><?= htmlspecialchars($title) ?></title>
   <link rel="stylesheet" href="stylesheet.css">
-  <style>.product-item-price .orig{ text-decoration:line-through; opacity:.5; margin-right:6px; }
-    .product-image-wrapper{height:fit-content;}
-    .product-name-link {
-    color: inherit;
-    text-decoration: none;
-    text-decoration-color: transparent;   /* hides underline initially */
-    text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
-    transition: text-decoration-color .25s ease;
-    }
-
-    .product-name-link:hover {
-    text-decoration: underline;
-    text-decoration-color: currentColor;  /* fade underline in */
-    }
-  </style>
 </head>
 <body>
   <?php include __DIR__ . '/partials/header.php'; ?>
@@ -268,7 +261,17 @@ $title = title_from_filters($catIds);
             </a>
             <h3 class="product-item-name">
             <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$p['product_id'] ?>" class="product-name-link">
-                <span class="text-wrap"><?= htmlspecialchars($p['product_name']) ?></span>
+                <span class="text-wrap">
+                    <?= htmlspecialchars($p['product_name']) ?>
+                    <?php 
+                      // Check if chalk bag (category_id = 5) and out of stock
+                      $pCategoryId = isset($p['category_id']) ? (int)$p['category_id'] : 0;
+                      $pMaxStock = isset($p['max_stock_qty']) ? (int)$p['max_stock_qty'] : 0;
+                      if ($pCategoryId === 5 && $pMaxStock <= 0): 
+                    ?>
+                      <span class="product-sold-out">(Sold Out)</span>
+                    <?php endif; ?>
+                </span>
             </a>
             </h3>
             <p class="product-item-price">
@@ -395,5 +398,10 @@ $title = title_from_filters($catIds);
       });
     });
   </script>
+
+<?php include __DIR__ . '/partials/footer.php'; ?>
+
+<?php include __DIR__ . '/cart.php'; ?>
+
 </body>
 </html>

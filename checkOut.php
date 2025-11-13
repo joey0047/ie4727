@@ -23,22 +23,73 @@ if (isset($_SESSION['user_id'])) {
 }
 
 /* -----------------------------------------------------------
-   LOAD CART
-   Cart example format:
-   $_SESSION['cart'] = [
-       ['name'=>'Shirt A','price'=>29.90,'qty'=>2],
-       ['name'=>'Shorts B','price'=>45.50,'qty'=>1]
-   ];
+   LOAD CART FROM DATABASE
 ----------------------------------------------------------- */
-// Load dummy cart from session (until real cart system is ready)
-$cart = $_SESSION['cart'] ?? [];
+require __DIR__ . '/includes/db.php';
+require __DIR__ . '/includes/config.php';
 
-$subtotal = 0;
+$cartItems = [];
+$subtotal = 0.0;
 $total_items = 0;
 
-foreach ($cart as $item) {
-    $subtotal += $item['price'] * $item['qty'];
-    $total_items += $item['qty'];
+if (isset($_SESSION['user_id'])) {
+    $userId = (int)$_SESSION['user_id'];
+    
+    // Find latest cart for this user
+    $cartId = null;
+    $stmt = $mysqli->prepare("SELECT cart_id FROM carts WHERE user_id = ? ORDER BY date_created DESC LIMIT 1");
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $stmt->bind_result($cartId);
+    $stmt->fetch();
+    $stmt->close();
+    
+    if ($cartId) {
+        $sql = "
+          SELECT 
+            ci.cart_item_id,
+            ci.quantity,
+            v.variant_id,
+            v.size,
+            v.color_hex,
+            v.stock_qty,
+            p.product_id,
+            p.product_name,
+            p.category_id,
+            p.base_price,
+            p.discount_flat,
+            COALESCE(
+              (SELECT image_url FROM product_images pi 
+                 WHERE pi.product_id = p.product_id 
+                   AND (pi.variant_id = v.variant_id OR pi.variant_id IS NULL)
+                   AND pi.is_primary = 1
+                 ORDER BY pi.sort_order ASC, pi.image_id ASC LIMIT 1),
+              (SELECT image_url FROM product_images pi2 
+                 WHERE pi2.product_id = p.product_id
+                 ORDER BY pi2.is_primary DESC, pi2.sort_order ASC, pi2.image_id ASC LIMIT 1)
+            ) AS image_url
+          FROM cart_items ci
+          JOIN variants v ON v.variant_id = ci.variant_id
+          JOIN products p ON p.product_id = v.product_id
+          WHERE ci.cart_id = ?
+          ORDER BY ci.cart_item_id DESC
+        ";
+        $stmt = $mysqli->prepare($sql);
+        $stmt->bind_param('i', $cartId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $priceOrig = (float)$row['base_price'];
+            $disc      = (float)$row['discount_flat'];
+            $unitPrice = max($priceOrig - $disc, 0);
+            $row['unit_price'] = $unitPrice;
+            $row['line_total'] = $unitPrice * (int)$row['quantity'];
+            $subtotal += $row['line_total'];
+            $total_items += (int)$row['quantity'];
+            $cartItems[] = $row;
+        }
+        $stmt->close();
+    }
 }
 
 $shipping = 5.00;
@@ -198,17 +249,42 @@ $total = $subtotal + $shipping;
             <div class="order-summary">
                 <h2 class="order-summary-title">Order Summary</h2>
 
-                <div class="order-items">
-    <?php if (empty($cart)): ?>
+                <div class="order-items" id="orderItems">
+    <?php if (empty($cartItems)): ?>
         <p>No items in cart.</p>
     <?php else: ?>
-        <?php foreach ($cart as $item): ?>
-            <div class="order-item-row">
-                <p><strong><?php echo htmlspecialchars($item['name']); ?></strong></p>
-                <p>Qty: <?php echo $item['qty']; ?></p>
-                <p>$<?php echo number_format($item['price'] * $item['qty'], 2); ?></p>
+        <?php foreach ($cartItems as $item): ?>
+            <div class="order-item">
+                <div class="order-item-image">
+                    <img src="<?= htmlspecialchars($item['image_url'] ?: (BASE_URL . '/assets/images/tempimage.png')) ?>" 
+                         alt="<?= htmlspecialchars($item['product_name']) ?>">
+                </div>
+                <div class="order-item-details">
+                    <div class="order-item-name">
+                        <?= htmlspecialchars($item['product_name']) ?>
+                        <?php 
+                          // Check if chalk bag (category_id = 5) and out of stock
+                          $itemCategoryId = isset($item['category_id']) ? (int)$item['category_id'] : 0;
+                          $itemStockQty = isset($item['stock_qty']) ? (int)$item['stock_qty'] : 0;
+                          if ($itemCategoryId === 5 && $itemStockQty <= 0): 
+                        ?>
+                          <span class="order-item-sold-out">(Sold Out)</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="order-item-specs">
+                        <?php if (!empty($item['size'])): ?>
+                            Size <?= htmlspecialchars(strtoupper($item['size'])) ?> | 
+                        <?php endif; ?>
+                        <?php if (!empty($item['color_hex'])): ?>
+                            Color <?= htmlspecialchars(strtoupper($item['color_hex'])) ?>
+                        <?php endif; ?>
+                    </div>
+                    <div class="order-item-price">
+                        Qty: <?= (int)$item['quantity'] ?> × $<?= number_format($item['unit_price'], 2) ?> = 
+                        $<?= number_format($item['line_total'], 2) ?>
+                    </div>
+                </div>
             </div>
-            <hr>
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
@@ -237,21 +313,9 @@ $total = $subtotal + $shipping;
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="footer">
-    <div class="footer-top">
-        <div class="footer-left">
-            <h2 class="footer-logo">Daey</h2>
-            <p class="footer-tagline">Climbing Apparel Store</p>
-        </div>
-        <nav class="footer-nav">
-            <a href="homepage.html" class="footer-link">Home</a>
-            <a href="productlist.html" class="footer-link">Shop</a>
-            <a href="aboutus.php" class="footer-link">About Us</a>
-            <a href="#" class="footer-link">Contact Us</a>
-        </nav>
-    </div>
-</footer>
+<?php include DIR . '/partials/footer.php'; ?>
+
+<?php include DIR . '/cart.php'; ?>
 
 </body>
 </html>

@@ -1,6 +1,10 @@
 <?php
+session_start();
 require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/config.php';
+
+// Check if user is logged in
+$isLoggedIn = isset($_SESSION['user_id']);
 
 /* ----------------- Newsletter form handler ----------------- */
 $newsletterMessage = '';
@@ -144,364 +148,6 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
   <title>SHOPNAME | Climbing Apparel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="<?= BASE_URL ?>/stylesheet.css">
-  <style>
-    body {
-      font-family: "Lexend Deca", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    .landing-page {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    /* Hero */
-    .hero {
-      position: relative;
-      height: 520px;
-      margin-bottom: 56px;
-      background-image: url("<?= BASE_URL ?>/assets/images/tempbanner.png"); /* change to your hero img */
-      background-size: cover;
-      background-position: center;
-      color: #fff;
-    }
-    .hero-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to right, rgba(0,0,0,.55), rgba(0,0,0,.15));
-    }
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      padding: 120px 40px;
-      max-width: 560px;
-    }
-    .hero-title {
-      font-size: 40px;
-      line-height: 1.05;
-      margin-bottom: 16px;
-    }
-    .hero-text {
-      font-size: 16px;
-      line-height: 1.6;
-      margin-bottom: 24px;
-      max-width: 420px;
-    }
-    .hero-btn {
-      display: inline-block;
-      padding: 10px 26px;
-      border-radius: 4px;
-      border: none;
-      background: #16B1B9;
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background .2s ease, transform .05s ease;
-    }
-    .hero-btn:hover { background:#1298a0; }
-    .hero-btn:active { transform: translateY(1px); }
-
-    /* Section headers */
-    .section {
-      padding: 0 20px 60px;
-    }
-    .section-header {
-      margin-bottom: 24px;
-    }
-    .section-title {
-      font-size: 22px;
-      margin-bottom: 4px;
-    }
-    .section-subtitle {
-      font-size: 14px;
-      color: #555;
-    }
-
-    /* New Arrivals */
-    .new-arrivals-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 24px;
-    }
-    @media (max-width: 900px) {
-      .new-arrivals-grid {
-        grid-template-columns: repeat(2, minmax(0,1fr));
-      }
-    }
-    @media (max-width: 600px) {
-      .new-arrivals-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    .product-card {
-      border: 1px solid #eee;
-      padding: 14px;
-      background: #fff;
-    }
-    .product-card-image {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #f5f5f5;
-      overflow: hidden;
-    }
-    .product-card-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .product-card-name {
-      margin-top: 12px;
-      font-size: 14px;
-    }
-    .product-card-name a {
-      color: inherit;
-      text-decoration: none;
-    }
-    .product-card-name a:hover {
-      text-decoration: underline;
-    }
-    .product-card-price {
-      margin-top: 4px;
-      font-size: 13px;
-    }
-    .product-card-price .orig {
-      text-decoration: line-through;
-      opacity: .5;
-      margin-right: 6px;
-    }
-    .product-card-price .final {
-      font-weight: 600;
-    }
-
-    /* About / company section */
-    .about-section-inner {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      gap: 32px;
-      align-items: center;
-    }
-    @media (max-width: 900px) {
-      .about-section-inner {
-        grid-template-columns: 1fr;
-      }
-    }
-    .about-image {
-      width: 100%;
-      height: 320px;
-      background-image: url("<?= BASE_URL ?>/assets/images/about-climbers.png");
-      background-size: cover;
-      background-position: center;
-    }
-    .about-copy-title {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-    .about-copy-highlight {
-      font-size: 15px;
-      color: #16B1B9;
-      margin-bottom: 8px;
-    }
-    .about-copy-body {
-      font-size: 14px;
-      line-height: 1.7;
-      margin-bottom: 20px;
-    }
-    .about-btn {
-      display:inline-block;
-      padding: 8px 20px;
-      border-radius:4px;
-      border:none;
-      background:#16B1B9;
-      color:#fff;
-      font-size:14px;
-      font-weight:600;
-      text-decoration:none;
-      cursor:pointer;
-    }
-    .about-btn:hover { background:#1298a0; }
-
-/* Shop Collection */
-.shop-collection-section {
-  background: #000;           /* black band like the design */
-  color: #1a0c06;
-  padding-top: 40px;
-  padding-bottom: 60px;
-}
-
-.shop-collection-section .section-title {
-  color: #f5f5f5;
-}
-
-.shop-collection-section .section-subtitle {
-  color: #e0e0e0;
-}
-
-.shop-collection-grid {
-  display: grid;
-  grid-template-columns: 2fr 1.4fr;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-}
-
-/* Large left card spanning both rows */
-.shop-collection-card--large {
-  grid-row: 1 / 3;
-}
-
-  /* Card styling */
-  .shop-collection-card {
-    display: flex;
-    gap: 18px;
-    padding: 18px;
-    border: 1px solid #222;
-    background: #f5f5f5;
-    align-items: center;
-  }
-
-  .shop-collection-image {
-    flex: 0 0 40%;
-    aspect-ratio: 1 / 1;
-    background: #eaeaea;
-    overflow: hidden;
-  }
-
-  .shop-collection-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .shop-collection-text-title {
-    font-size: 16px;
-    margin-bottom: 4px;
-    color: #2b1710;
-  }
-
-  .shop-collection-copy {
-    font-size: 13px;
-    margin-bottom: 6px;
-    color: #555;
-  }
-
-  .shop-collection-link {
-    font-size: 13px;
-    color: #4d2513;
-    text-decoration: none;
-  }
-
-  .shop-collection-link span {
-    margin-left: 4px;
-  }
-
-  /* Responsive tweaks */
-  @media (max-width: 900px) {
-    .shop-collection-grid {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
-    }
-    .shop-collection-card--large {
-      grid-row: auto;
-    }
-  }
-
-  /* New Arrivals hover effect */
-  .product-card-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #f5f5f5;
-    overflow: hidden;
-  }
-
-  .product-card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform .3s ease;
-  }
-
-  .product-card:hover .product-card-image img {
-    transform: scale(1.06);
-  }
-
- /* Newsletter – full-width image strip */
-  .newsletter-section {
-    background-image: url("<?= BASE_URL ?>/assets/images/newsletter.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 70px 20px;
-    color: #ffffff;
-    height: fit-content;
-      display: flex;
-  justify-content: center;
-  }
-
-  .newsletter-overlay {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-  }
-
-  .newsletter-title {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .newsletter-subtitle {
-    font-size: 16px;
-    font-weight: 400;
-    margin-bottom: 24px;
-  }
-
-  .newsletter-form {
-    display: inline-flex;
-    align-items: stretch;
-    max-width: 520px;
-    width: 100%;
-  }
-
-  .newsletter-input {
-    flex: 1;
-    padding: 10px 16px;
-    border-radius: 6px 0 0 6px;
-    border: none;
-    font-size: 14px;
-    outline: none;
-  }
-
-  .newsletter-button {
-    padding: 0 22px;
-    border-radius: 0 6px 6px 0;
-    border: none;
-    background: #4b260f;      /* dark brown */
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .newsletter-button:hover {
-    background: #371b0a;
-  }
-
-  .newsletter-message {
-    margin-top: 10px;
-    font-size: 13px;
-  }
-    /* Simple footer */
-    .footer {
-      padding:20px;
-      border-top:1px solid #eee;
-      font-size:12px;
-      color:#777;
-      text-align:center;
-      margin-top:20px;
-    }
-  </style>
 </head>
 <body>
   <?php include __DIR__ . '/partials/header.php'; ?>
@@ -535,14 +181,14 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
             $final = max($orig - $disc, 0);
           ?>
           <article class="product-card">
-            <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$p['product_id'] ?>">
+            <a href="<?= $isLoggedIn ? BASE_URL . '/product.php?id=' . (int)$p['product_id'] : BASE_URL . '/logInPage.php' ?>">
               <div class="product-card-image">
                 <img src="<?= htmlspecialchars($p['image_url'] ?: (BASE_URL . '/assets/images/tempimage.png')) ?>"
                      alt="<?= htmlspecialchars($p['product_name']) ?>">
               </div>
             </a>
             <div class="product-card-name">
-              <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$p['product_id'] ?>">
+              <a href="<?= $isLoggedIn ? BASE_URL . '/product.php?id=' . (int)$p['product_id'] : BASE_URL . '/logInPage.php' ?>">
                 <?= htmlspecialchars($p['product_name']) ?>
               </a>
             </div>
@@ -564,10 +210,10 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       <div class="about-section-inner">
         <div class="about-image"></div>
         <div>
-          <div class="about-copy-highlight">About SHOPNAME</div>
+          <div class="about-copy-highlight">About Daey</div>
           <h3 class="about-copy-title">Climbing-first apparel with everyday comfort.</h3>
           <p class="about-copy-body">
-            We started SHOPNAME after too many sessions spent in gear that felt
+            We started Daey after too many sessions spent in gear that felt
             like a compromise—heavy at the gym and out of place everywhere else.
             Today, every piece we make is built around three principles:
             unrestricted movement, durable construction, and clean, low-key design.
@@ -577,7 +223,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
             shorts that dry fast on hot approaches, our apparel is tested by real climbers
             and refined with every runout. No gimmicks, just gear that works as hard as you do.
           </p>
-          <a href="<?= BASE_URL ?>/about.php" class="about-btn">Learn More</a>
+          <a href="<?= BASE_URL ?>/aboutus.php" class="about-btn">Learn More</a>
         </div>
       </div>
     </section>
@@ -647,9 +293,14 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
       </div>
     </section>
 
-    <!-- Newsletter -->
+    <!-- (Testimonials section skipped as requested) -->
+
+  </main>
+
+  <!-- Newsletter -->
   <section class="newsletter-section">
-    <div class="newsletter-overlay">
+    <div class="newsletter-overlay"></div>
+    <div class="newsletter-content">
       <h2 class="newsletter-title">Join Our Newsletter</h2>
       <p class="newsletter-subtitle">
         Sign up for deals, new products and promotions.
@@ -672,13 +323,9 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     </div>
   </section>
 
-    <!-- (Testimonials section skipped as requested) -->
+<?php include __DIR__ . '/partials/footer.php'; ?>
 
+<?php include __DIR__ . '/cart.php'; ?>
 
-    <!-- Simple Footer -->
-    <footer class="footer">
-      © <?= date('Y') ?> SHOPNAME. All rights reserved.
-    </footer>
-  </main>
 </body>
 </html>
