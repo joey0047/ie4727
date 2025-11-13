@@ -8,6 +8,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
 
 /* ----------------- Newsletter form handler ----------------- */
 $newsletterMessage = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newsletter_email'])) {
     $email = trim($_POST['newsletter_email']);
 
@@ -15,13 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newsletter_email'])) 
         $newsletterMessage = 'Please enter a valid email address.';
     } else {
         // 1) Insert email into users table (newsletter-only user)
-        //    - empty first_name, last_name, password, delivery_address
-        //    - IGNORE in case the email already exists
         $stmt = $mysqli->prepare("
             INSERT IGNORE INTO users
-                (FIRST_name, last_name, email, password_hash, delivery_address, date_created)
+                (first_name, last_name, email, password_hash, delivery_address, date_created)
             VALUES
-                ('',        '',        ?,    '',            '',               NOW())
+                ('', '', ?, '', '', NOW())
         ");
         if ($stmt) {
             $stmt->bind_param('s', $email);
@@ -29,25 +28,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newsletter_email'])) 
             $stmt->close();
         }
 
-        // 2) Compose welcome email
-        $subject = 'Welcome to SHOPNAME';
-        $body = "Hey climber,\n\n"
-              . "Thanks for signing up to the SHOPNAME newsletter.\n\n"
-              . "You’ll be the first to hear about new drops, limited collections,\n"
-              . "and route-tested gear we’re building for the wall and beyond.\n\n"
-              . "In the meantime, you can start exploring the latest collection here:\n"
-              . BASE_URL . "/productlist.php\n\n"
-              . "Climb safe,\n"
-              . "The SHOPNAME Crew\n";
+        // 2) Send welcome email using PHP mail()
+        $shopName   = 'SHOPNAME';           // change this
+        $fromEmail  = 'no-reply@localhost'; // must match Mercury account
+        $replyEmail = 'support@localhost';
 
-        $headers = "From: SHOPNAME <no-reply@example.com>\r\n"
-                 . "Reply-To: support@example.com\r\n"
-                 . "Content-Type: text/plain; charset=UTF-8\r\n";
+        $subject = "Welcome to $shopName";
 
-        if (@mail($email, $subject, $body, $headers)) {
+        $body  = "Hey climber,\r\n\r\n";
+        $body .= "Thanks for signing up to the $shopName newsletter.\r\n\r\n";
+        $body .= "You’ll be the first to hear about new drops, limited collections,\r\n";
+        $body .= "and route-tested gear we’re building for the wall and beyond.\r\n\r\n";
+        $body .= "You can start exploring here:\r\n";
+        $body .= BASE_URL . "/productlist.php\r\n\r\n";
+        $body .= "Climb safe,\r\n";
+        $body .= "The $shopName Crew\r\n";
+
+        $headers  = "From: $shopName <{$fromEmail}>\r\n";
+        $headers .= "Reply-To: {$replyEmail}\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+        if (mail($email, $subject, $body, $headers)) {
             $newsletterMessage = 'Thanks for signing up! Check your inbox for a welcome email.';
         } else {
-            $newsletterMessage = 'Thanks for signing up! (Email sending is disabled on this server demo.)';
+            $newsletterMessage = 'Thanks for signing up! (Could not send email from server.)';
         }
     }
 }
@@ -147,7 +151,387 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
   <meta charset="UTF-8">
   <title>SHOPNAME | Climbing Apparel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="<?= BASE_URL ?>/stylesheet.css">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/assets/style.css">
+  <style>
+    body {
+      font-family: "Lexend Deca", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .landing-page {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Hero */
+    .herohm {
+      position: relative;
+      height: 520px;
+      margin-bottom: 0px;
+      background-image: url("<?= BASE_URL ?>/assets/images/tempbanner.png"); /* change to your hero img */
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+    }
+    .hero-overlayhm {
+      position: absolute;
+      display:flex;
+      justify-content:center:
+      inset: 0;
+      background: linear-gradient(to right, rgba(0,0,0,.55), rgba(0,0,0,.15));
+    }
+    .section-hm-arrival{
+      padding: 80px 72px 40px 72px;
+    }
+    .hero-contents {
+      position: relative;
+      z-index: 1;
+      padding: 120px 40px;
+      max-width: 560px;
+      display: grid;
+      align-items:center;
+      justify-items: left;
+      text-align:left;
+    }
+    .hero-title {
+      font-size: 40px;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+    .hero-text {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      max-width: 420px;
+      width: 100%;
+      display: inline-block;
+    }
+    .hero-btn {
+      display: inline-block;
+      padding: 10px 26px;
+      border-radius: 4px;
+      border: none;
+      background: #16B1B9;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .2s ease, transform .05s ease;
+      width: fit-content;
+    }
+    .hero-btn:hover { background:#1298a0; }
+    .hero-btn:active { transform: translateY(1px); }
+
+    /* Section headers */
+    .section {
+      padding: 80px 72px 40px 72px;
+    }
+    .section-header {
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+    .section-subtitle {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .section-abt{
+      padding: 80px 0;
+    }
+
+    /* New Arrivals */
+    .new-arrivals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .new-arrivals-grid {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+    }
+    @media (max-width: 600px) {
+      .new-arrivals-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .product-card {
+      border: 1px solid #eee;
+      padding: 14px;
+      background: #fff;
+    }
+    .product-card-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #f5f5f5;
+      overflow: hidden;
+    }
+    .product-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .product-card-name {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .product-card-name a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .product-card-name a:hover {
+      text-decoration: underline;
+    }
+    .product-card-price {
+      margin-top: 4px;
+      font-size: 13px;
+    }
+    .product-card-price .orig {
+      text-decoration: line-through;
+      opacity: .5;
+      margin-right: 6px;
+    }
+    .product-card-price .final {
+      font-weight: 600;
+    }
+
+    /* About / company section */
+    .about-section-inner {
+      display: grid;
+      width: 100%;
+      padding: 24px 72px;
+      background: var(--color-alt-bg-grey);
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 32px;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .about-section-inner {
+        grid-template-columns: 1fr;
+      }
+    }
+    .about-image {
+      width: 100%;
+      height: 320px;
+      background-image: url("<?= BASE_URL ?>/assets/images/about-climbers.png");
+      background-size: cover;
+      background-position: center;
+    }
+    .about-copy-title {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .about-copy-highlight {
+      font-size: 15px;
+      color: #16B1B9;
+      margin-bottom: 8px;
+    }
+    .about-copy-body {
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .about-btn {
+      display:inline-block;
+      padding: 8px 20px;
+      border-radius:4px;
+      border:none;
+      background:#16B1B9;
+      color:#fff;
+      font-size:14px;
+      font-weight:600;
+      text-decoration:none;
+      cursor:pointer;
+      margin-top: 16px;
+    }
+    .about-btn:hover { background:#1298a0; }
+
+/* Shop Collection */
+.shop-collection-section-hm {
+  color: #1a0c06;
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
+.shop-collection-section .section-title {
+  color: #f5f5f5;
+}
+
+.shop-collection-section .section-subtitle {
+  color: #e0e0e0;
+}
+
+.shop-collection-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.4fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* Large left card spanning both rows */
+.shop-collection-card--large {
+  grid-row: 1 / 3;
+}
+
+  /* Card styling */
+  .shop-collection-card {
+    display: flex;
+    gap: 18px;
+    padding: 18px;
+    border: 1px solid #222;
+    background: #f5f5f5;
+    align-items: center;
+  }
+
+  .shop-collection-image {
+    flex: 0 0 40%;
+    aspect-ratio: 1 / 1;
+    background: #eaeaea;
+    overflow: hidden;
+  }
+
+  .shop-collection-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .shop-collection-text-title {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: #2b1710;
+  }
+
+  .shop-collection-copy {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #555;
+  }
+
+  .shop-collection-link {
+    font-size: 13px;
+    color: #4d2513;
+    text-decoration: none;
+  }
+
+  .shop-collection-link span {
+    margin-left: 4px;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 900px) {
+    .shop-collection-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+    .shop-collection-card--large {
+      grid-row: auto;
+    }
+  }
+
+  /* New Arrivals hover effect */
+  .product-card-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #f5f5f5;
+    overflow: hidden;
+  }
+
+  .product-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .3s ease;
+  }
+
+  .product-card:hover .product-card-image img {
+    transform: scale(1.06);
+  }
+
+ /* Newsletter – full-width image strip */
+  .newsletter-section {
+    background-image: url("<?= BASE_URL ?>/assets/images/newsletter.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 70px 20px;
+    color: #ffffff;
+    height: fit-content;
+      display: flex;
+  justify-content: center;
+  
+  }
+
+  .newsletter-overlay {
+    max-width: 100%;
+    text-align: center;
+    height: fit-content;
+    display: grid;
+    padding: 24px 0px;
+  }
+
+  .newsletter-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .newsletter-subtitles {
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 16px;
+  }
+
+  .newsletter-form {
+    display: inline-flex;
+    align-items: stretch;
+    max-width: 520px;
+    width: 100%;
+  }
+
+  .newsletter-input {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 6px 0 0 6px;
+    border: none;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .newsletter-button {
+    padding: 0 22px;
+    border-radius: 0 6px 6px 0;
+    border: none;
+    background: #4b260f;      /* dark brown */
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .newsletter-button:hover {
+    background: #371b0a;
+  }
+
+  .newsletter-message {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+    /* Simple footer */
+    .footer {
+      padding:20px;
+      border-top:1px solid #eee;
+      font-size:12px;
+      color:#777;
+      text-align:center;
+      margin-top:20px;
+    }
+  </style>
 </head>
 <body>
   <?php include __DIR__ . '/partials/header.php'; ?>
@@ -155,9 +539,9 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
   <main class="landing-page">
 
     <!-- Hero / Banner -->
-    <section class="hero">
+    <section class="herohm">
       <div class="hero-overlay"></div>
-      <div class="hero-content">
+      <div class="hero-contents">
         <h1 class="hero-title">Gear up for your next send.</h1>
         <p class="hero-text">
           Route-tested climbing apparel designed to move with you—on the wall, at the gym,
@@ -168,9 +552,9 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     </section>
 
     <!-- New Arrival / Best Seller / Sale -->
-    <section class="section">
+    <section class="section-hm-arrival">
       <div class="section-header">
-        <h2 class="section-title">New Arrival / Best Seller / Sale</h2>
+        <h2 class="section-title">New Arrival</h2>
       </div>
 
       <div class="new-arrivals-grid">
@@ -188,6 +572,8 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
               </div>
             </a>
             <div class="product-card-name">
+              <a href="<?= BASE_URL ?>/product.php?id=<?= (int)$p['product_id'] ?>">
+                <body><?= htmlspecialchars($p['product_name']) ?></body>
               <a href="<?= $isLoggedIn ? BASE_URL . '/product.php?id=' . (int)$p['product_id'] : BASE_URL . '/logInPage.php' ?>">
                 <?= htmlspecialchars($p['product_name']) ?>
               </a>
@@ -206,30 +592,27 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     </section>
 
     <!-- Company Related / About -->
-    <section class="section">
+    <section class="section-abt">
       <div class="about-section-inner">
         <div class="about-image"></div>
         <div>
           <div class="about-copy-highlight">About Daey</div>
           <h3 class="about-copy-title">Climbing-first apparel with everyday comfort.</h3>
+          <p><body class="about-copy-body">
+            We started Daey after too many sessions spent in gear that felt
           <p class="about-copy-body">
             We started Daey after too many sessions spent in gear that felt
             like a compromise—heavy at the gym and out of place everywhere else.
             Today, every piece we make is built around three principles:
             unrestricted movement, durable construction, and clean, low-key design.
-          </p>
-          <p class="about-copy-body">
-            From overbuilt heavyweight tees that hold their shape to lightweight
-            shorts that dry fast on hot approaches, our apparel is tested by real climbers
-            and refined with every runout. No gimmicks, just gear that works as hard as you do.
-          </p>
-          <a href="<?= BASE_URL ?>/aboutus.php" class="about-btn">Learn More</a>
+              </body></p>
+          <a href="<?= BASE_URL ?>/about.php" class="about-btn">Learn More</a>
         </div>
       </div>
     </section>
 
     <!-- Shop Collection -->
-    <section class="section shop-collection-section">
+    <section class="section shop-collection-section-hm">
       <div class="shop-collection-grid">
         <!-- Tops (large card spanning two rows) -->
         <article class="shop-collection-card shop-collection-card--large">
@@ -282,7 +665,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
           <div>
             <div class="shop-collection-text-title">Accessories</div>
             <p class="shop-collection-copy">
-              Chalk buckets, socks, and small essentials to round out your kit and
+              Chalk buckets and socks to round out your kit and
               make every session smoother.
             </p>
             <a href="<?= BASE_URL ?>/productlist.php?category=4,5" class="shop-collection-link">
@@ -302,7 +685,7 @@ function price_fmt($n) { return '$' . number_format((float)$n, 2); }
     <div class="newsletter-overlay"></div>
     <div class="newsletter-content">
       <h2 class="newsletter-title">Join Our Newsletter</h2>
-      <p class="newsletter-subtitle">
+      <p class="newsletter-subtitles">
         Sign up for deals, new products and promotions.
       </p>
       <form class="newsletter-form" method="post" action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>">

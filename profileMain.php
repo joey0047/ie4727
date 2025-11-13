@@ -130,25 +130,7 @@ $conn->close();
             </form>
         </div>
 
-        <!-- Orders Section -->
-        <div class="orders-section">
-            <h2 class="orders-title">My Orders</h2>
-            <table class="orders-table">
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Dates</th>
-                        <th>Total Price</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="4" class="empty-orders">No orders yet</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+
     </section>
 
     <?php include DIR . '/partials/footer.php'; ?>

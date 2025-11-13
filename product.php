@@ -246,7 +246,7 @@ foreach ($variants as $v) {
       </div>
 
       <!-- RIGHT: info / options -->
-      <div class="product-info">
+      <div style="gap:24px;">
         <h1><?= htmlspecialchars($product['product_name']) ?></h1>
 
         <?php 
