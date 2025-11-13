@@ -821,17 +821,34 @@ function updateImagesForColor(colorHex) {
           return;
         }
 
-        console.log('Add to cart:', {
-          productId: <?= $productId ?>,
-          variantId,
-          qty
-        });
+        const formData = new URLSearchParams();
+        formData.append('variant_id', String(variantId));
+        formData.append('quantity', String(qty));
 
-        if (typeof window.openCartDrawer === 'function') {
-          window.openCartDrawer();
-        } else {
-          alert('Added to cart (stub). Cart drawer will be implemented later.');
-        }
+        fetch('<?= BASE_URL ?>/add_to_cart.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          },
+          body: formData.toString(),
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (!data.ok) {
+            alert(data.message || 'Unable to add to cart.');
+            return;
+          }
+
+          // Optionally update a cart count badge here using data.total_items
+
+          // Open the cart drawer
+          if (typeof window.openCartDrawer === 'function') {
+            window.openCartDrawer();
+          }
+        })
+        .catch(() => {
+          alert('Network error while adding to cart.');
+        });
       });
     }
 
